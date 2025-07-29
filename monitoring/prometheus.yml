@@ -1,0 +1,50 @@
+# Prometheus configuration for Social Media Automation System
+# Place this file in /etc/prometheus/prometheus.yml on your server
+
+global:
+  scrape_interval: 15s  # Default scrape interval
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+  scrape_timeout: 10s  # Default scrape timeout
+
+# Alert manager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+# Rule files specifies a list of files from which rules are read
+rule_files:
+  - 'alerts/*.rules'
+
+# Scrape configurations for monitoring the application
+scrape_configs:
+  # Monitor the application itself
+  - job_name: 'socialmedia-app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:8000']
+    
+  # Monitor PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+    
+  # Monitor Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+    
+  # Monitor Node Exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # Monitor cAdvisor (container metrics, if using containers)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:8080']
+    
+  # Monitor Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

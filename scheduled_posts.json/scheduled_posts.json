@@ -1,0 +1,54 @@
+[
+  {
+    "platform": "instagram",
+    "content_path": "C:\\Windsurf\\Projects\\CascadeProjects\\gain_social_media_followers\\CascadeProjects\\windsurf-project\\test_output\\test_instagram.txt",
+    "caption": "Test post from Social Media Automation - 2025-07-27T11:53:16.517004",
+    "scheduled_time": "2025-07-27T11:58:16.517004",
+    "status": "SCHEDULED",
+    "post_id": null,
+    "post_url": null,
+    "error": null,
+    "created_at": "2025-07-27T11:53:16.517004",
+    "updated_at": "2025-07-27T11:53:16.517004",
+    "metadata": {}
+  },
+  {
+    "platform": "facebook",
+    "content_path": "C:\\Windsurf\\Projects\\CascadeProjects\\gain_social_media_followers\\CascadeProjects\\windsurf-project\\test_output\\test_facebook.txt",
+    "caption": "Test post from Social Media Automation - 2025-07-27T11:53:16.521628",
+    "scheduled_time": "2025-07-27T11:58:16.521628",
+    "status": "SCHEDULED",
+    "post_id": null,
+    "post_url": null,
+    "error": null,
+    "created_at": "2025-07-27T11:53:16.521628",
+    "updated_at": "2025-07-27T11:53:16.521628",
+    "metadata": {}
+  },
+  {
+    "platform": "twitter",
+    "content_path": "C:\\Windsurf\\Projects\\CascadeProjects\\gain_social_media_followers\\CascadeProjects\\windsurf-project\\test_output\\test_twitter.txt",
+    "caption": "Test post from Social Media Automation - 2025-07-27T11:53:16.526446",
+    "scheduled_time": "2025-07-27T11:58:16.526446",
+    "status": "SCHEDULED",
+    "post_id": null,
+    "post_url": null,
+    "error": null,
+    "created_at": "2025-07-27T11:53:16.526446",
+    "updated_at": "2025-07-27T11:53:16.526446",
+    "metadata": {}
+  },
+  {
+    "platform": "tiktok",
+    "content_path": "C:\\Windsurf\\Projects\\CascadeProjects\\gain_social_media_followers\\CascadeProjects\\windsurf-project\\test_output\\test_tiktok.txt",
+    "caption": "Test post from Social Media Automation - 2025-07-27T11:53:16.533163",
+    "scheduled_time": "2025-07-27T11:58:16.533163",
+    "status": "SCHEDULED",
+    "post_id": null,
+    "post_url": null,
+    "error": null,
+    "created_at": "2025-07-27T11:53:16.533163",
+    "updated_at": "2025-07-27T11:53:16.533163",
+    "metadata": {}
+  }
+]

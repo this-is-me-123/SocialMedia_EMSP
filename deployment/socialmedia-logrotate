@@ -1,0 +1,40 @@
+# Log rotation configuration for Social Media Automation System
+/var/log/socialmedia/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 0640 socialmedia socialmedia
+    sharedscripts
+    postrotate
+        systemctl reload rsyslog >/dev/null 2>&1 || true
+    endscript
+}
+
+# Application logs
+/opt/socialmedia/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 0640 socialmedia socialmedia
+    sharedscripts
+    postrotate
+        systemctl reload socialmedia-health >/dev/null 2>&1 || true
+    endscript
+}
+
+# Backup logs
+/var/backups/socialmedia/*.log {
+    weekly
+    missingok
+    rotate 4
+    compress
+    delaycompress
+    notifempty
+    create 0640 socialmedia socialmedia
+}

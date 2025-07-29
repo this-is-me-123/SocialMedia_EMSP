@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encompass Automation Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="img/logo.png" alt="Encompass Logo" class="logo">
+                <h2>Encompass</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#dashboard">
+                            <i class="ri-dashboard-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#schedule">
+                            <i class="ri-calendar-event-line"></i>
+                            <span>Schedule Post</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#content">
+                            <i class="ri-image-edit-line"></i>
+                            <span>Content Creator</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#analytics">
+                            <i class="ri-line-chart-line"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#accounts">
+                            <i class="ri-account-circle-line"></i>
+                            <span>Accounts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings">
+                            <i class="ri-settings-4-line"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User" alt="User" class="user-avatar">
+                    <div class="user-details">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+                <button class="btn btn-logout">
+                    <i class="ri-logout-box-r-line"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="ri-search-line"></i>
+                    <input type="text" placeholder="Search posts, analytics, or settings...">
+                </div>
+                <div class="top-bar-actions">
+                    <button class="btn btn-notification">
+                        <i class="ri-notification-3-line"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="btn btn-create">
+                        <i class="ri-add-line"></i>
+                        <span>Create New</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="content-area">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <div class="breadcrumb">
+                        <a href="#">Home</a>
+                        <span>/</span>
+                        <a href="#" class="active">Dashboard</a>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row stats-row">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary">
+                                <i class="ri-file-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>128</h3>
+                                <p>Scheduled Posts</p>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="ri-arrow-up-line"></i> 12%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success">
+                                <i class="ri-thumb-up-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>2,543</h3>
+                                <p>Engagements</p>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="ri-arrow-up-line"></i> 8.2%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning">
+                                <i class="ri-user-follow-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>1,287</h3>
+                                <p>New Followers</p>
+                            </div>
+                            <div class="stat-trend down">
+                                <i class="ri-arrow-down-line"></i> 3.1%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-info">
+                                <i class="ri-eye-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>24,891</h3>
+                                <p>Impressions</p>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="ri-arrow-up-line"></i> 15.7%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Content Calendar</h3>
+                                <div class="card-actions">
+                                    <button class="btn btn-sm btn-outline-secondary">Today</button>
+                                    <button class="btn btn-sm btn-outline-secondary">Week</button>
+                                    <button class="btn btn-sm btn-outline-secondary">Month</button>
+                                    <button class="btn btn-sm btn-primary">
+                                        <i class="ri-add-line"></i> New Post
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="calendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Quick Post</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="post-composer">
+                                    <div class="post-tabs">
+                                        <button class="active"><i class="ri-file-text-line"></i> Text</button>
+                                        <button><i class="ri-image-line"></i> Image</button>
+                                        <button><i class="ri-video-line"></i> Video</button>
+                                    </div>
+                                    <div class="post-editor">
+                                        <div class="form-group">
+                                            <textarea class="form-control" placeholder="What's on your mind?"></textarea>
+                                        </div>
+                                        <div class="post-preview">
+                                            <!-- Preview will appear here -->
+                                        </div>
+                                        <div class="post-actions">
+                                            <div class="action-buttons">
+                                                <button class="btn btn-icon"><i class="ri-image-line"></i></button>
+                                                <button class="btn btn-icon"><i class="ri-link"></i></button>
+                                                <button class="btn btn-icon"><i class="ri-hashtag"></i></button>
+                                                <button class="btn btn-icon"><i class="ri-emotion-line"></i></button>
+                                            </div>
+                                            <div class="post-submit">
+                                                <div class="form-group mb-0">
+                                                    <select class="form-select form-select-sm">
+                                                        <option>Post Now</option>
+                                                        <option>Schedule</option>
+                                                        <option>Save Draft</option>
+                                                    </select>
+                                                </div>
+                                                <button class="btn btn-primary">Post</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Posts</h3>
+                                <a href="#" class="btn btn-sm btn-link">View All</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Post</th>
+                                                <th>Platform</th>
+                                                <th>Status</th>
+                                                <th>Engagement</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://via.placeholder.com/40" alt="Post" class="post-thumb">
+                                                        <div class="ms-2">
+                                                            <div class="post-title">New IT Services Launch</div>
+                                                            <small class="text-muted">2 hours ago</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="badge bg-instagram">Instagram</span></td>
+                                                <td><span class="badge bg-success">Published</span></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ri-heart-fill text-danger me-1"></i> 128
+                                                        <i class="ri-chat-3-fill text-muted ms-3 me-1"></i> 24
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-icon" data-bs-toggle="dropdown">
+                                                            <i class="ri-more-2-line"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="#"><i class="ri-eye-line me-2"></i>View</a></li>
+                                                            <li><a class="dropdown-item" href="#"><i class="ri-pencil-line me-2"></i>Edit</a></li>
+                                                            <li><a class="dropdown-item" href="#"><i class="ri-bar-chart-line me-2"></i>Analytics</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item text-danger" href="#"><i class="ri-delete-bin-line me-2"></i>Delete</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- More rows... -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Performance Overview</h3>
+                                <div class="card-actions">
+                                    <select class="form-select form-select-sm">
+                                        <option>Last 7 Days</option>
+                                        <option>Last 30 Days</option>
+                                        <option>Last 90 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="performanceChart"></canvas>
+                                </div>
+                                <div class="platform-stats mt-4">
+                                    <div class="platform">
+                                        <div class="platform-info">
+                                            <span class="platform-icon bg-instagram">
+                                                <i class="ri-instagram-line"></i>
+                                            </span>
+                                            <div class="platform-details">
+                                                <h4>Instagram</h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-instagram" style="width: 65%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="platform-percentage">65%</span>
+                                    </div>
+                                    <div class="platform">
+                                        <div class="platform-info">
+                                            <span class="platform-icon bg-facebook">
+                                                <i class="ri-facebook-circle-line"></i>
+                                            </span>
+                                            <div class="platform-details">
+                                                <h4>Facebook</h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-facebook" style="width: 45%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="platform-percentage">45%</span>
+                                    </div>
+                                    <div class="platform">
+                                        <div class="platform-info">
+                                            <span class="platform-icon bg-twitter">
+                                                <i class="ri-twitter-line"></i>
+                                            </span>
+                                            <div class="platform-details">
+                                                <h4>Twitter</h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-twitter" style="width: 30%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="platform-percentage">30%</span>
+                                    </div>
+                                    <div class="platform">
+                                        <div class="platform-info">
+                                            <span class="platform-icon bg-tiktok">
+                                                <i class="ri-tiktok-line"></i>
+                                            </span>
+                                            <div class="platform-details">
+                                                <h4>TikTok</h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-tiktok" style="width: 25%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="platform-percentage">25%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

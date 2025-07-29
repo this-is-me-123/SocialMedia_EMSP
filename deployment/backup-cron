@@ -1,0 +1,8 @@
+# Social Media Automation System - Backup Schedule
+# This file should be placed in /etc/cron.d/
+
+# Daily full backup at 2 AM
+0 2 * * * socialmedia /opt/socialmedia/venv/bin/python /opt/socialmedia/scripts/backup_restore.py backup --s3 >> /var/log/socialmedia/backup.log 2>&1
+
+# Clean up old backups (runs every Sunday at 3 AM)
+0 3 * * 0 socialmedia find /var/backups/socialmedia -type d -mtime +30 -exec rm -rf {} \; >> /var/log/socialmedia/backup-cleanup.log 2>&1

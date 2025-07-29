@@ -1,0 +1,522 @@
+/**
+ * Encompass Feedback Admin Styles
+ * 
+ * This file contains all the styles for the admin interface of the Encompass Feedback plugin.
+ */
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+.encompass-feedback-dashboard,
+.encompass-feedback-list,
+.encompass-feedback-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Clearfix */
+.encompass-feedback-clearfix:before,
+.encompass-feedback-clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.encompass-feedback-clearfix:after {
+    clear: both;
+}
+
+/* Buttons */
+.encompass-feedback-button {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 2.15384615;
+    min-height: 30px;
+    margin: 0;
+    padding: 0 10px;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    -webkit-appearance: none;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    background: #f0f0f1;
+    border-color: #dcdcde;
+    color: #2271b1;
+}
+
+.encompass-feedback-button-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: none;
+}
+
+.encompass-feedback-button:hover {
+    background: #f6f7f7;
+    border-color: #2271b1;
+    color: #135e96;
+}
+
+.encompass-feedback-button-primary:hover {
+    background: #135e96;
+    border-color: #0a4b78;
+    color: #fff;
+}
+
+/* Cards */
+.encompass-feedback-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin-bottom: 20px;
+}
+
+.encompass-feedback-card-header {
+    border-bottom: 1px solid #dcdcde;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.encompass-feedback-card-header h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.4;
+}
+
+.encompass-feedback-card-body {
+    padding: 24px;
+}
+
+/* Stats */
+.encompass-feedback-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #646970;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #1d2327;
+}
+
+/* Charts */
+.encompass-feedback-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chart-container {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.chart-container h3 {
+    margin: 0 0 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d2327;
+    text-align: center;
+}
+
+/* Tables */
+.encompass-feedback-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+}
+
+.encompass-feedback-table th,
+.encompass-feedback-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.encompass-feedback-table th {
+    font-weight: 600;
+    color: #1d2327;
+    background-color: #f6f7f7;
+}
+
+.encompass-feedback-table tr:hover {
+    background-color: #f6f7f7;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-transform: capitalize;
+}
+
+.status-new {
+    background-color: #e5f5fa;
+    color: #00a0d2;
+}
+
+.status-in_progress {
+    background-color: #f8f6b1;
+    color: #8a6e17;
+}
+
+.status-resolved {
+    background-color: #e5f7e9;
+    color: #00a32a;
+}
+
+/* Feedback detail page */
+.encompass-feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.encompass-feedback-header h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feedback-status {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.feedback-priority {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.priority-high {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.priority-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.priority-low {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.feedback-navigation {
+    display: flex;
+    gap: 8px;
+}
+
+/* User info */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-avatar img {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+}
+
+.user-details h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-role {
+    font-size: 12px;
+    background: #f0f0f1;
+    color: #2c3338;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.user-email,
+.user-registered,
+.user-ip {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #50575e;
+}
+
+.user-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 8px;
+}
+
+/* Activity log */
+.activity-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.activity-log-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.activity-log-item:last-child {
+    border-bottom: none;
+}
+
+.activity-log-message {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+.activity-log-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* Forms */
+.encompass-feedback-form-group {
+    margin-bottom: 20px;
+}
+
+.encompass-feedback-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.encompass-feedback-form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+textarea.encompass-feedback-form-control {
+    min-height: 100px;
+}
+
+/* Tabs */
+.encompass-feedback-tabs {
+    display: flex;
+    border-bottom: 1px solid #c3c4c7;
+    margin: 0 0 20px;
+}
+
+.encompass-feedback-tab {
+    padding: 12px 16px;
+    margin-right: 5px;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-bottom: none;
+    margin-bottom: -1px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.encompass-feedback-tab.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+    color: #1d2327;
+    cursor: default;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .encompass-feedback-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .encompass-feedback-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .encompass-feedback-content {
+        flex-direction: column;
+    }
+    
+    .encompass-feedback-main,
+    .encompass-feedback-sidebar {
+        width: 100%;
+        margin-right: 0;
+    }
+    
+    .encompass-feedback-sidebar {
+        margin-top: 20px;
+    }
+}
+
+/* Animation */
+@keyframes encompass-feedback-fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.encompass-feedback-fade-in {
+    animation: encompass-feedback-fadeIn 0.3s ease-in-out;
+}
+
+/* Modal */
+.encompass-feedback-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 160000;
+    justify-content: center;
+    align-items: center;
+}
+
+.encompass-feedback-modal-content {
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 650px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: encompass-feedback-fadeIn 0.2s ease-in-out;
+}
+
+.encompass-feedback-modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #dcdcde;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.encompass-feedback-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.encompass-feedback-modal-close {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #646970;
+}
+
+.encompass-feedback-modal-close:hover {
+    color: #1d2327;
+}
+
+.encompass-feedback-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.encompass-feedback-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #dcdcde;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Loading spinner */
+.encompass-feedback-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #2271b1;
+    animation: encompass-feedback-spin 1s ease-in-out infinite;
+}
+
+@keyframes encompass-feedback-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.encompass-feedback-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.encompass-feedback-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #1d2327;
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.encompass-feedback-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}

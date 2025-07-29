@@ -1,0 +1,200 @@
+name: Test Reports
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests and Generate Reports
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        pip install locust faker pyyall pytest-html pytest-xdist
+    
+    - name: Run unit tests with coverage
+      id: unit-tests
+      run: |
+        pytest tests/unit/ \
+          --cov=automation_stack \
+          --cov=scripts \
+          --cov-report=xml:coverage.xml \
+          --junitxml=test-results/unit/junit.xml \
+          --html=test-results/unit/report.html \
+          --self-contained-html
+      env:
+        TEST_DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+        REDIS_URL: redis://localhost:6379/1
+    
+    - name: Run integration tests
+      id: integration-tests
+      run: |
+        mkdir -p test-results/integration
+        pytest tests/integration/ \
+          --junitxml=test-results/integration/junit.xml \
+          --html=test-results/integration/report.html \
+          --self-contained-html
+    
+    - name: Run contract tests
+      id: contract-tests
+      run: |
+        mkdir -p test-results/contract
+        pytest tests/contract/ \
+          --junitxml=test-results/contract/junit.xml \
+          --html=test-results/contract/report.html \
+          --self-contained-html
+    
+    - name: Run performance tests
+      id: performance-tests
+      run: |
+        mkdir -p test-results/performance
+        # Start the application in the background
+        nohup uvicorn automation_stack.main:app --host 0.0.0.0 --port 8000 > /dev/null 2>&1 &
+        # Wait for the application to start
+        sleep 10
+        # Run locust tests
+        locust -f tests/performance/test_performance.py \
+          --headless \
+          --users 10 \
+          --spawn-rate 2 \
+          --run-time 1m \
+          --csv=test-results/performance/locust \
+          --html=test-results/performance/report.html \
+          --logfile=test-results/performance/locust.log
+    
+    - name: Generate test data
+      id: test-data
+      run: |
+        mkdir -p test-data
+        python scripts/generate_test_data.py --users 5 --posts 3 --output test-data/
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: |
+          test-results/
+          test-data/
+          coverage.xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage.xml
+        fail_ci_if_error: false
+    
+    - name: Generate test report
+      id: test-report
+      if: always()
+      run: |
+        # Create summary markdown
+        echo "# Test Execution Summary" > TEST-SUMMARY.md
+        echo "## Unit Tests" >> TEST-SUMMARY.md
+        echo "- [HTML Report](test-results/unit/report.html)" >> TEST-SUMMARY.md
+        echo "- [JUnit XML](test-results/unit/junit.xml)" >> TEST-SUMMARY.md
+        echo "## Integration Tests" >> TEST-SUMMARY.md
+        echo "- [HTML Report](test-results/integration/report.html)" >> TEST-SUMMARY.md
+        echo "- [JUnit XML](test-results/integration/junit.xml)" >> TEST-SUMMARY.md
+        echo "## Contract Tests" >> TEST-SUMMARY.md
+        echo "- [HTML Report](test-results/contract/report.html)" >> TEST-SUMMARY.md
+        echo "- [JUnit XML](test-results/contract/junit.xml)" >> TEST-SUMMARY.md
+        echo "## Performance Tests" >> TEST-SUMMARY.md
+        echo "- [HTML Report](test-results/performance/report.html)" >> TEST-SUMMARY.md
+        echo "- [CSV Data](test-results/performance/locust_stats.csv)" >> TEST-SUMMARY.md
+        
+        # Add test data information
+        echo "## Test Data" >> TEST-SUMMARY.md
+        echo "Generated test data is available in the test-results artifact" >> TEST-SUMMARY.md
+        
+        # Add coverage information
+        echo "## Test Coverage" >> TEST-SUMMARY.md
+        echo "Coverage report is available on [Codecov](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> TEST-SUMMARY.md
+    
+    - name: Upload test summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-summary
+        path: TEST-SUMMARY.md
+    
+    - name: Set up GitHub Pages
+      uses: actions/configure-pages@v3
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    - name: Upload dashboard
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: test-results/
+    
+    - name: Process test results
+      id: process-results
+      run: |
+        python scripts/process_test_results.py
+        
+        # Create the dashboard data directory if it doesn't exist
+        mkdir -p dashboard/data
+        
+        # Copy the test results to the dashboard
+        cp test-results/dashboard/*.json dashboard/data/
+        
+        # Generate the dashboard
+        echo "Test results processed and dashboard updated"
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dashboard
+        keep_files: true
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    - name: Update deployment status
+      if: always()
+      run: |
+        if [ "${{ steps.deployment.outputs.url }}" != "" ]; then
+          echo "Dashboard URL: ${{ steps.deployment.outputs.url }}"
+          echo "::notice title=Test Dashboard::View the test dashboard at ${{ steps.deployment.outputs.url }}"
+        else
+          echo "::warning::Failed to deploy dashboard"
+        fi

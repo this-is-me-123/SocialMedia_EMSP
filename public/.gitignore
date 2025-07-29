@@ -1,0 +1,6 @@
+# Ignore generated assets
+*.map
+*.tmp
+*.bak
+.cache/
+.DS_Store

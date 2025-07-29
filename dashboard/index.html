@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .test-pass {
+            border-left: 4px solid #10B981;
+        }
+        .test-fail {
+            border-left: 4px solid #EF4444;
+        }
+        .test-skip {
+            border-left: 4px solid #F59E0B;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    Test Results Dashboard
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Last updated: <span id="last-updated">Loading...</span>
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                <div class="bg-white overflow-hidden shadow rounded-lg dashboard-card">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Test Passed
+                                </dt>
+                                <dd class="flex items-baseline">
+                                    <div class="text-2xl font-semibold text-gray-900" id="passed-count">0</div>
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                        <span id="passed-percent">0%</span>
+                                    </div>
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg dashboard-card">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Test Failed
+                                </dt>
+                                <dd class="flex items-baseline">
+                                    <div class="text-2xl font-semibold text-gray-900" id="failed-count">0</div>
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-red-600">
+                                        <span id="failed-percent">0%</span>
+                                    </div>
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg dashboard-card">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Test Skipped
+                                </dt>
+                                <dd class="flex items-baseline">
+                                    <div class="text-2xl font-semibold text-gray-900" id="skipped-count">0</div>
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-yellow-600">
+                                        <span id="skipped-percent">0%</span>
+                                    </div>
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg dashboard-card">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Total Tests
+                                </dt>
+                                <dd class="flex items-baseline">
+                                    <div class="text-2xl font-semibold text-gray-900" id="total-count">0</div>
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-blue-600">
+                                        <span>100%</span>
+                                    </div>
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 mb-8">
+                <!-- Test Results Pie Chart -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Test Results Distribution</h2>
+                    <div class="h-64">
+                        <canvas id="resultsPieChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Test Execution Time -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Test Execution Time (ms)</h2>
+                    <div class="h-64">
+                        <canvas id="executionTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Suites -->
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+                <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900">Test Suites</h2>
+                    <div class="flex space-x-2">
+                        <button id="expand-all" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800">Expand All</button>
+                        <button id="collapse-all" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800">Collapse All</button>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200">
+                    <dl id="test-suites">
+                        <!-- Test suites will be populated by JavaScript -->
+                        <div class="p-4 text-center text-gray-500">
+                            Loading test suites...
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="bg-white shadow rounded-lg p-6 mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Performance Metrics</h2>
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Average Response Time</h3>
+                        <p class="text-2xl font-semibold text-gray-900" id="avg-response-time">0 ms</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Requests/Sec</h3>
+                        <p class="text-2xl font-semibold text-gray-900" id="requests-per-sec">0</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">95th Percentile</h3>
+                        <p class="text-2xl font-semibold text-gray-900" id="p95">0 ms</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Failures</h3>
+                        <p class="text-2xl font-semibold text-gray-900" id="failure-count">0</p>
+                    </div>
+                </div>
+                <div class="mt-6 h-64">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white">
+            <div class="max-w-7xl mx-auto py-6 px-4 overflow-hidden sm:px-6 lg:px-8">
+                <p class="mt-2 text-center text-base text-gray-500">
+                    &copy; 2023 Social Media Automation System. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

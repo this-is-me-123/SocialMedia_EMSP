@@ -1,0 +1,21 @@
+# Node modules (if using JS tooling)
+node_modules/
+
+# Composer dependencies (if using Composer)
+vendor/
+
+# Build artifacts
+/build/
+dist/
+*.zip
+
+# IDE/editor files
+.DS_Store
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Logs and debug
+*.log
+debug.log

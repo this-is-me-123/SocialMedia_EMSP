@@ -1,0 +1,84 @@
+# Alerting rules for Social Media Automation System
+groups:
+- name: socialmedia.rules
+  rules:
+  - alert: ServiceDown
+    expr: up{job="socialmedia"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service {{ $labels.instance }} is down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+
+  - alert: HighErrorRate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.1
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High error rate on {{ $labels.instance }}"
+      description: "High error rate ({{ $value }}) on {{ $labels.instance }} for more than 10 minutes."
+
+  - alert: HighCPULoad
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU load on {{ $labels.instance }}"
+      description: "CPU load is {{ $value }}% on {{ $labels.instance }} for more than 10 minutes."
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is {{ $value }}% on {{ $labels.instance }} for more than 10 minutes."
+
+  - alert: LowDiskSpace
+    expr: (node_filesystem_avail_bytes{mountpoint="/"} * 100) / node_filesystem_size_bytes{mountpoint="/"} < 20
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Low disk space on {{ $labels.instance }}"
+      description: "Only {{ $value }}% disk space available on {{ $labels.instance }}."
+
+  - alert: BackupFailed
+    expr: time() - backup_last_success_timestamp_seconds > 86400
+    for: 1h
+    labels:
+      severity: critical
+    annotations:
+      summary: "Backup failed on {{ $labels.instance }}"
+      description: "No successful backup has been made in the last 24 hours on {{ $labels.instance }}."
+
+  - alert: HighQueueLength
+    expr: redis_queue_length > 1000
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High queue length on {{ $labels.instance }}"
+      description: "Queue length is {{ $value }} on {{ $labels.instance }} for more than 5 minutes."
+
+  - alert: DatabaseConnectionError
+    expr: rate(database_connection_errors_total[5m]) > 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Database connection errors on {{ $labels.instance }}"
+      description: "Database connection errors detected on {{ $labels.instance }}."
+
+  - alert: HighResponseTime
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High response time on {{ $labels.instance }}"
+      description: "95th percentile response time is {{ $value }}s on {{ $labels.instance }} for more than 10 minutes."

@@ -1,0 +1,358 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Social Media Automation API",
+    "version": "1.0.0",
+    "description": "API for scheduling and managing social media posts"
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInDB"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": "string",
+                    "token_type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": "string",
+                  "password": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/posts/": {
+      "post": {
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostInDB"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostCreate"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/posts/{post_id}": {
+      "get": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostInDB"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{post_id}/cancel": {
+      "post": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostInDB"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/analytics/{post_id}": {
+      "get": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Analytics"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "description": "User creation model.",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Username",
+            "type": "string"
+          },
+          "email": {
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Full Name"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_superuser": {
+            "default": false,
+            "title": "Is Superuser",
+            "type": "boolean"
+          },
+          "password": {
+            "minLength": 8,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "UserCreate",
+        "type": "object"
+      },
+      "Post": {
+        "$defs": {
+          "Platform": {
+            "description": "Supported social media platforms.",
+            "enum": [
+              "instagram",
+              "facebook",
+              "twitter",
+              "tiktok"
+            ],
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "description": "Post creation model.",
+        "properties": {
+          "platform": {
+            "$ref": "#/$defs/Platform"
+          },
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "scheduled_time": {
+            "format": "date-time",
+            "title": "Scheduled Time",
+            "type": "string"
+          },
+          "media_urls": {
+            "items": {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Media Urls",
+            "type": "array"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          }
+        },
+        "required": [
+          "platform",
+          "content",
+          "scheduled_time"
+        ],
+        "title": "PostCreate",
+        "type": "object"
+      },
+      "Analytics": {
+        "description": "Analytics model.",
+        "properties": {
+          "post_id": {
+            "title": "Post Id",
+            "type": "string"
+          },
+          "impressions": {
+            "minimum": 0,
+            "title": "Impressions",
+            "type": "integer"
+          },
+          "engagements": {
+            "minimum": 0,
+            "title": "Engagements",
+            "type": "integer"
+          },
+          "likes": {
+            "minimum": 0,
+            "title": "Likes",
+            "type": "integer"
+          },
+          "comments": {
+            "minimum": 0,
+            "title": "Comments",
+            "type": "integer"
+          },
+          "shares": {
+            "minimum": 0,
+            "title": "Shares",
+            "type": "integer"
+          },
+          "clicks": {
+            "minimum": 0,
+            "title": "Clicks",
+            "type": "integer"
+          },
+          "reach": {
+            "minimum": 0,
+            "title": "Reach",
+            "type": "integer"
+          },
+          "saved": {
+            "minimum": 0,
+            "title": "Saved",
+            "type": "integer"
+          },
+          "video_views": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Video Views"
+          },
+          "engagement_rate": {
+            "maximum": 100,
+            "minimum": 0,
+            "title": "Engagement Rate",
+            "type": "number"
+          },
+          "collected_at": {
+            "format": "date-time",
+            "title": "Collected At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "post_id",
+          "impressions",
+          "engagements",
+          "likes",
+          "comments",
+          "shares",
+          "clicks",
+          "reach",
+          "saved",
+          "engagement_rate",
+          "collected_at"
+        ],
+        "title": "Analytics",
+        "type": "object"
+      }
+    }
+  }
+}

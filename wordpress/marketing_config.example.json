@@ -1,0 +1,185 @@
+{
+  "wordpress": {
+    "url": "https://www.encompass-msp.com",
+    "admin_user": "admin_username",
+    "admin_password": "your_secure_password",
+    "path": "/var/www/wordpress"
+  },
+  "email_marketing": {
+    "provider": "mailchimp",
+    "api_key": "your_mailchimp_api_key",
+    "list_id": "your_audience_id",
+    "enable_drip_campaigns": true
+  },
+  "seo": {
+    "enable_yoast": true,
+    "enable_redirection": true,
+    "enable_seo_framework": false,
+    "site_name": "Encompass MSP",
+    "site_description": "Managed IT Services & Digital Marketing Solutions",
+    "social_profiles": {
+      "facebook": "https://facebook.com/encompassmsp",
+      "twitter": "https://twitter.com/encompassmsp",
+      "linkedin": "https://linkedin.com/company/encompassmsp",
+      "instagram": "https://instagram.com/encompassmsp"
+    }
+  },
+  "social_media": {
+    "facebook_pixel_id": "",
+    "twitter_pixel_id": "",
+    "linkedin_pixel_id": "",
+    "enable_auto_posting": true,
+    "auto_post_to": ["facebook", "twitter", "linkedin"],
+    "auto_post_categories": ["blog", "news", "case-studies"]
+  },
+  "conversion": {
+    "enable_ab_testing": true,
+    "enable_exit_intent": true,
+    "enable_heatmaps": true,
+    "conversion_goals": [
+      {
+        "name": "Contact Form Submission",
+        "type": "form_submission",
+        "selector": ".contact-form",
+        "value": 10.00
+      },
+      {
+        "name": "Free Consultation Signup",
+        "type": "form_submission",
+        "selector": "#consultation-form",
+        "value": 25.00
+      },
+      {
+        "name": "Resource Download",
+        "type": "file_download",
+        "file_extension": "pdf",
+        "value": 5.00
+      }
+    ]
+  },
+  "crm": {
+    "enable_crm": true,
+    "crm_provider": "hubspot",
+    "api_key": "your_crm_api_key",
+    "sync_contacts": true,
+    "sync_forms": true,
+    "sync_events": true
+  },
+  "analytics": {
+    "google_analytics_id": "G-XXXXXXXXXX",
+    "google_tag_manager_id": "GTM-XXXXXX",
+    "microsoft_clarity_id": "",
+    "hotjar_site_id": ""
+  },
+  "content_marketing": {
+    "blog_categories": [
+      "IT Support",
+      "Cybersecurity",
+      "Cloud Computing",
+      "Digital Marketing",
+      "Web Development",
+      "Industry News"
+    ],
+    "content_calendar": {
+      "publish_schedule": "weekly",
+      "post_types": ["blog", "case_study", "whitepaper", "webinar"],
+      "target_keywords": [
+        "managed IT services",
+        "cybersecurity solutions",
+        "cloud migration",
+        "digital marketing strategy",
+        "SEO services"
+      ]
+    }
+  },
+  "lead_generation": {
+    "lead_magnets": [
+      {
+        "title": "IT Security Assessment",
+        "type": "checklist",
+        "file": "/path/to/security-assessment.pdf",
+        "form_id": "security_assessment_form"
+      },
+      {
+        "title": "Digital Marketing Strategy Guide",
+        "type": "ebook",
+        "file": "/path/to/marketing-guide.pdf",
+        "form_id": "marketing_guide_form"
+      }
+    ],
+    "cta_placements": [
+      "blog_sidebar",
+      "after_post_content",
+      "floating_bar",
+      "exit_intent_popup"
+    ]
+  },
+  "email_automation": {
+    "welcome_series": [
+      {
+        "delay_days": 0,
+        "subject": "Welcome to Encompass MSP!",
+        "template": "welcome-email-1"
+      },
+      {
+        "delay_days": 2,
+        "subject": "Our Services",
+        "template": "services-email"
+      },
+      {
+        "delay_days": 5,
+        "subject": "Case Study: How We Helped [Industry] Business",
+        "template": "case-study-email"
+      },
+      {
+        "delay_days": 10,
+        "subject": "Free IT Assessment",
+        "template": "assessment-offer-email"
+      }
+    ],
+    "lead_nurturing": [
+      {
+        "trigger": "download_whitepaper",
+        "series": [
+          {
+            "delay_days": 1,
+            "subject": "Additional Resources: [Topic]",
+            "template": "followup-resources"
+          },
+          {
+            "delay_days": 3,
+            "subject": "Case Study: [Related Case Study]",
+            "template": "related-case-study"
+          }
+        ]
+      }
+    ]
+  },
+  "performance_optimization": {
+    "enable_caching": true,
+    "enable_image_optimization": true,
+    "enable_lazy_loading": true,
+    "enable_cdn": true,
+    "minify_assets": true
+  },
+  "security": {
+    "enable_firewall": true,
+    "enable_malware_scanning": true,
+    "enable_login_protection": true,
+    "enable_activity_logging": true
+  },
+  "backup": {
+    "enable_automated_backups": true,
+    "backup_frequency": "daily",
+    "retention_days": 30,
+    "storage_location": "remote",
+    "notify_on_failure": true
+  },
+  "monitoring": {
+    "enable_uptime_monitoring": true,
+    "enable_performance_monitoring": true,
+    "enable_security_monitoring": true,
+    "alert_emails": ["alerts@encompass-msp.com"],
+    "weekly_report": true
+  }
+}

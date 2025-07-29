@@ -1,0 +1,53 @@
+# Node modules and Python cache
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+*.env
+.env*
+.DS_Store
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+# WordPress core files not needed for deployment
+wordpress/wp-content/cache/
+wordpress/wp-content/backups/
+wordpress/wp-content/uploads/
+wordpress/wp-content/upgrade/
+wordpress/wp-content/ai1wm-backups/
+wordpress/wp-content/advanced-cache.php
+wordpress/wp-content/object-cache.php
+wordpress/wp-content/debug.log
+wordpress/wp-content/wp-cache-config.php
+wordpress/wp-content/plugins/hello.php
+wordpress/wp-content/plugins/akismet/
+# Deployment and build artifacts
+/build/
+dist/
+coverage/
+*.zip
+*.tar.gz
+*.tgz
+*.bak
+*.swp
+*.tmp
+*.temp
+*.old
+*.orig
+*.rej
+*.patch
+*.bak
+*.swp
+*.tmp
+*.temp
+*.old
+*.orig
+*.rej
+*.patch
+# OS generated files
+Thumbs.db
+Desktop.ini

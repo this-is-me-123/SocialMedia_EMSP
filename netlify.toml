@@ -1,0 +1,13 @@
+[build]
+  command = ""
+  publish = "public"
+
+[dev]
+  command = ""
+  port = 8080
+
+[[redirects]]
+  from = "/api/*"
+  to = "http://localhost:8080/api/:splat"
+  status = 200
+  force = true

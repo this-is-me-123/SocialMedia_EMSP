@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: encompass-analytics-fastapi
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn automation_stack.main:app --host 0.0.0.0 --port 8080"
+    envVars:
+      - key: PORT
+        value: 8080
+    autoDeploy: true
+    region: oregon
+    branch: main
+    rootDir: .

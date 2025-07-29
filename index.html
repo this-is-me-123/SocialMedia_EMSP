@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NexusTech Solutions - Premier Managed IT Services and Digital Marketing Agency">
+    <title>Encompass MSP | Managed IT & Digital Marketing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --light-bg: #f8fafc;
+            --dark-text: #1e293b;
+            --success: #10b981;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: var(--dark-text);
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            padding: 100px 0;
+            margin-bottom: 50px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIvPjwvc3ZnPg==');
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .platform-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .platform-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .platform-tiktok { background-color: #000000; color: #00f2ea; }
+        .platform-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; }
+        .platform-facebook { background-color: #1877f2; color: white; }
+        .platform-twitter { background-color: #1da1f2; color: white; }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-box {
+            padding: 30px;
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#" style="color: var(--primary-color);">Encompass <span class="text-dark">MSP</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#platforms">Platforms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#content">Content</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container position-relative" style="z-index: 1;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Transform Your Business with <span class="text-warning">Smart Technology</span></h1>
+                    <p class="lead mb-4">Comprehensive IT solutions and digital marketing strategies to help your business thrive in the digital age.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#contact" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="#services" class="btn btn-outline-light btn-lg">Our Services</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="https://img.freepik.com/free-vector/cloud-computing-concept-illustration_114360-7284.jpg" alt="IT Solutions" class="img-fluid">
+                </div>
+                <a href="#facebook" class="social-icon platform-facebook me-2 mb-2">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#twitter" class="social-icon platform-twitter me-2 mb-2">
+                    <i class="fab fa-twitter"></i>
+                </a>
+            </div>
+            <a href="#platforms" class="btn btn-primary btn-lg mt-4">Explore Our Platforms</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-5" id="services">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill mb-3">Our Services</span>
+                <h2 class="mb-3">Comprehensive IT & Digital Solutions</h2>
+                <p class="lead text-muted">Custom solutions tailored to your business needs</p>
+            </div>
+            <div class="row g-4">
+                <!-- Managed IT Services -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <h4>Managed IT Services</h4>
+                        <p>Proactive IT support and network management to keep your business running smoothly 24/7.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Network Monitoring</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Cloud Solutions</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Data Backup & Recovery</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Digital Marketing -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <h4>Digital Marketing</h4>
+                        <p>Data-driven marketing strategies to increase your online presence and generate leads.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>SEO & Content Marketing</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Social Media Management</li>
+                            <li><i class="fas fa-check text-success me-2"></i>PPC & Paid Advertising</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Web Development -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h4>Web Development</h4>
+                        <p>Custom websites and web applications designed for performance and user experience.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Responsive Design</li>
+                            <li><i class="fas fa-check text-success me-2"></i>E-commerce Solutions</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Custom Web Applications</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Cybersecurity -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Cybersecurity</h4>
+                        <p>Protect your business from cyber threats with our comprehensive security solutions.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Security Audits</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Threat Detection</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Employee Training</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Cloud Services -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h4>Cloud Services</h4>
+                        <p>Scalable cloud solutions to enhance your business agility and reduce costs.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Cloud Migration</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Managed Cloud Hosting</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Hybrid Cloud Solutions</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- IT Consulting -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h4>IT Consulting</h4>
+                        <p>Expert guidance to align your technology with business objectives.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Technology Roadmapping</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Digital Transformation</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Vendor Management</li>
+                        </ul>
+                    </div>
+                </div>
+                        <h4>TikTok</h4>
+                        <p>Daily beauty hacks, transformations, and trends</p>
+                        <p class="small text-muted">250K+ Followers</p>
+                        <a href="#" class="btn btn-outline-dark">Follow Me</a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4" id="instagram">
+                    <div class="platform-card text-center p-4">
+                        <div class="platform-icon platform-instagram rounded-circle d-inline-flex align-items-center justify-content-center">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <h4>Instagram</h4>
+                        <p>Daily beauty inspiration & behind-the-scenes</p>
+                        <p class="small text-muted">150K+ Followers</p>
+                        <a href="#" class="btn btn-outline-dark">Follow Me</a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4" id="facebook">
+                    <div class="platform-card text-center p-4">
+                        <div class="platform-icon platform-facebook rounded-circle d-inline-flex align-items-center justify-content-center">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <h4>Facebook</h4>
+                        <p>Exclusive live tutorials & community</p>
+                        <p class="small text-muted">50K+ Followers</p>
+                        <a href="#" class="btn btn-outline-dark">Follow Me</a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4" id="twitter">
+                    <div class="platform-card text-center p-4">
+                        <div class="platform-icon platform-twitter rounded-circle d-inline-flex align-items-center justify-content-center">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                        <h4>Twitter</h4>
+                        <p>Beauty news, tips & daily thoughts</p>
+                        <p class="small text-muted">75K+ Followers</p>
+                        <a href="#" class="btn btn-outline-dark">Follow Me</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Me Section -->
+    <section class="py-5" id="about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="position-relative" style="border-radius: 15px; overflow: hidden;">
+                        <!-- Replace with your professional photo -->
+                        <img src="https://via.placeholder.com/600x800" alt="[Your Name]" class="img-fluid rounded-3">
+                        <div class="position-absolute bottom-0 start-0 p-4 text-white" style="background: linear-gradient(transparent, rgba(0,0,0,0.7)); width: 100%;">
+                            <h3 class="mb-0">[Your Name]</h3>
+                            <p class="mb-0">Certified Beauty Expert & Content Creator</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="mb-4">About Me</h2>
+                    <p class="lead">Hi there! I'm [Your Name], a passionate beauty enthusiast and content creator dedicated to helping you look and feel your best.</p>
+                    <p>With over [X] years of experience in the beauty industry, I've worked with top brands and helped thousands of followers transform their beauty routines. My approach is all about celebrating natural beauty while having fun with makeup and skincare.</p>
+                    <p>When I'm not creating content, you can find me testing new products, perfecting makeup techniques, or sharing my favorite beauty finds with my amazing community.</p>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <span class="badge bg-primary p-2">Skincare Expert</span>
+                        <span class="badge bg-primary p-2">Makeup Artist</span>
+                        <span class="badge bg-primary p-2">Product Reviewer</span>
+                        <span class="badge bg-primary p-2">Beauty Educator</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="py-5" id="about-us">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="mb-4">About Us</h2>
+                    <p class="lead">At Nexus Tech, we're passionate about empowering businesses to succeed in the digital age. Our team of experts is dedicated to providing comprehensive IT solutions and digital marketing strategies that drive results.</p>
+                    <p>We believe in the importance of building strong relationships with our clients and partners, and we're committed to delivering exceptional service and support every step of the way.</p>
+                    <p>Our values are centered around innovation, integrity, and excellence. We're constantly seeking new ways to improve our services and stay ahead of the curve in the ever-evolving tech industry.</p>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://via.placeholder.com/600x400" alt="About Us" class="img-fluid rounded-3">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="py-5 bg-light" id="content">
+        <div class="container">
+            <h2 class="text-center mb-5">Featured Content & Collaborations</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-spa"></i>
+                        </div>
+                        <h4>Skincare Routines</h4>
+                        <p>My personal AM/PM routines and product reviews</p>
+                        <a href="#" class="btn btn-sm btn-outline-primary mt-2">Watch Video</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h4>Makeup Tutorials</h4>
+                        <p>Step-by-step guides and transformations</p>
+                        <a href="#" class="btn btn-sm btn-outline-primary mt-2">View Tutorials</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h4>Brand Collaborations</h4>
+                        <p>Honest reviews of products I love and partner with</p>
+                        <a href="#contact" class="btn btn-sm btn-outline-primary mt-2">Work With Me</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brand Collaboration Section -->
+    <section class="py-5" id="collaboration">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h2 class="mb-4">Brand Collaborations</h2>
+                    <p class="lead mb-5">I love partnering with brands that align with my values of authenticity, quality, and innovation in the beauty space.</p>
+                    
+                    <div class="row g-4 mb-5">
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                                <img src="https://via.placeholder.com/150x80?text=Brand+Logo" alt="Brand Logo" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                                <img src="https://via.placeholder.com/150x80?text=Brand+Logo" alt="Brand Logo" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                                <img src="https://via.placeholder.com/150x80?text=Brand+Logo" alt="Brand Logo" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                                <img src="https://via.placeholder.com/150x80?text=Brand+Logo" alt="Brand Logo" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <h3 class="h4 mb-4">Let's Work Together</h3>
+                                    <form>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <input type="text" class="form-control" placeholder="Your Name" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="email" class="form-control" placeholder="Your Email" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <input type="text" class="form-control" placeholder="Company/Organization">
+                                            </div>
+                                            <div class="col-12">
+                                                <select class="form-select" required>
+                                                    <option value="" disabled selected>Type of Collaboration</option>
+                                                    <option>Sponsored Content</option>
+                                                    <option>Product Review</option>
+                                                    <option>Brand Ambassadorship</option>
+                                                    <option>Event Appearance</option>
+                                                    <option>Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12">
+                                                <textarea class="form-control" rows="4" placeholder="Tell me about your brand and collaboration ideas" required></textarea>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="privacyPolicy" required>
+                                                    <label class="form-check-label small" for="privacyPolicy">
+                                                        I agree to the <a href="#" class="text-decoration-none">Privacy Policy</a> and <a href="#" class="text-decoration-none">Terms of Service</a>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 mt-3">
+                                                <button type="submit" class="btn btn-primary px-4">Send Collaboration Request</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Professional Contact Section -->
+    <section class="py-5" id="contact">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="mb-4">Get in Touch</h2>
+                    <p class="lead">For business inquiries, collaborations, or general questions, please don't hesitate to reach out.</p>
+                    <p>Phone: 555-555-5555</p>
+                    <p>Email: <a href="mailto:info@example.com" class="text-decoration-none">info@example.com</a></p>
+                    <p>Address: 123 Main St, Anytown, USA 12345</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h3 class="h4 mb-4">Send a Message</h3>
+                            <form>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" placeholder="Your Name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="email" class="form-control" placeholder="Your Email" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <textarea class="form-control" rows="4" placeholder="Your Message" required></textarea>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary px-4">Send Message</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5 class="text-uppercase mb-4">Encompass MSP</h5>
+                    <p>Empowering businesses with innovative IT solutions and digital marketing strategies to drive growth and success in the digital age.</p>
+                    <div class="mt-4">
+                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5 class="text-uppercase mb-4">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#home" class="text-white text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="#services" class="text-white text-decoration-none">Services</a></li>
+                        <li class="mb-2"><a href="#about" class="text-white text-decoration-none">About Us</a></li>
+                        <li class="mb-2"><a href="#contact" class="text-white text-decoration-none">Contact</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4 col-lg-3 mb-4 mb-md-0">
+                    <h5 class="text-uppercase mb-4">Our Services</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Managed IT Services</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Digital Marketing</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Web Development</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Cybersecurity</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Cloud Services</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4 col-lg-3">
+                    <h5 class="text-uppercase mb-4">Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> 123 Tech Park Drive, San Francisco, CA</li>
+                        <li class="mb-2"><i class="fas fa-phone-alt me-2"></i> +1 (555) 123-4567</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> info@nexustech.com</li>
+                        <li><i class="fas fa-clock me-2"></i> Mon - Fri: 9:00 AM - 6:00 PM</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-4 bg-light">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2023 Encompass MSP. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#" class="text-white text-decoration-none me-3">Privacy Policy</a>
+                    <a href="#" class="text-white text-decoration-none">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

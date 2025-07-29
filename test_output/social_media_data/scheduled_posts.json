@@ -1,0 +1,17 @@
+[
+  {
+    "platform": "twitter",
+    "content_path": "C:\\Windsurf\\Projects\\CascadeProjects\\gain_social_media_followers\\CascadeProjects\\windsurf-project\\test_output\\test_image.jpg",
+    "caption": "Test post from EnhancedSocialMediaManager #test #automation",
+    "scheduled_time": "2025-07-27T11:31:28.440561",
+    "status": "CANCELLED",
+    "post_id": null,
+    "post_url": null,
+    "error": null,
+    "created_at": "2025-07-27T11:26:28.440561",
+    "updated_at": "2025-07-27T11:26:28.441653",
+    "metadata": {
+      "media_alt_text": "Test image for social media post"
+    }
+  }
+]

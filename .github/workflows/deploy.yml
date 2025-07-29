@@ -1,0 +1,128 @@
+name: Deploy WordPress Plugin
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Default environment variables
+env:
+  WP_PLUGIN_DIR: /var/www/html/wp-content/plugins
+  PLUGIN_NAME: encompass-analytics
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: mbstring, xml, curl, json, intl, mysql, zip
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-progress --no-suggest
+          npm ci
+
+      - name: Run PHP linter
+        run: find . -type f -name '*.php' | xargs -n1 php -l
+
+      - name: Run PHPUnit tests
+        run: |
+          mkdir -p build/logs
+          ./vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+
+  build:
+    name: Build Plugin
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build plugin
+        run: |
+          mkdir -p build/plugin
+          rsync -Rr --exclude-from=.distignore . build/plugin/
+          cd build && zip -r ../${{ env.PLUGIN_NAME }}.zip plugin/
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.PLUGIN_NAME }}
+          path: ${{ github.workspace }}/${{ env.PLUGIN_NAME }}.zip
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PLUGIN_NAME }}
+          path: ./dist
+
+      - name: Deploy to staging server
+        if: env.STAGING_HOST != '' && env.STAGING_USER != '' && env.STAGING_SSH_KEY != ''
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          source: ./dist/${{ env.PLUGIN_NAME }}.zip
+          target: /tmp/
+
+      - name: Install on staging server
+        if: env.STAGING_HOST != '' && env.STAGING_USER != '' && env.STAGING_SSH_KEY != ''
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            echo "Starting deployment..."
+            cd ${{ env.WP_PLUGIN_DIR }}
+            wp plugin deactivate ${{ env.PLUGIN_NAME }} --allow-root
+            rm -rf ${{ env.PLUGIN_NAME }}
+            unzip /tmp/${{ env.PLUGIN_NAME }}.zip -d .
+            wp plugin activate ${{ env.PLUGIN_NAME }} --allow-root
+            echo "Deployment completed successfully"
+
+      - name: Skip deployment (missing secrets)
+        if: env.STAGING_HOST == '' || env.STAGING_USER == '' || env.STAGING_SSH_KEY == ''
+        run: |
+          echo "Skipping deployment - required secrets not configured"
+          echo "Please set STAGING_HOST, STAGING_USER, and STAGING_SSH_KEY secrets in GitHub"
+
+  notify:
+    name: Notify Status
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check deployment status
+        id: check_status
+        run: |
+          if [[ "${{ needs.deploy-staging.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: rtCamp/action-slack-notify@v2.2.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: "Deployment ${{ steps.check_status.outputs.status == 'success' && 'Succeeded' || 'Failed' }}"
+          SLACK_MESSAGE: "${{ steps.check_status.outputs.status == 'success' && 'Successfully' || 'Failed to' }} deploy ${{ env.PLUGIN_NAME }} to ${{ github.ref == 'refs/heads/main' && 'staging' || 'production' }}"
+          SLACK_COLOR: "${{ steps.check_status.outputs.status == 'success' && 'good' || 'danger' }}"
