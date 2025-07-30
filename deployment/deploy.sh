@@ -187,7 +187,8 @@ deploy() {
     cd "$APP_DIR"
     sudo -u $DEPLOY_USER git fetch origin
     sudo -u $DEPLOY_USER git checkout "$GIT_BRANCH"
-    sudo -u $DEPLOY_USER git pull origin "$GIT_BRANCH"
+    # Always use merge strategy to avoid git pull errors
+    sudo -u $DEPLOY_USER git pull --no-rebase origin "$GIT_BRANCH"
   else
     echo -e "${RED}Git repository not found in $APP_DIR${NC}"
     exit 1
