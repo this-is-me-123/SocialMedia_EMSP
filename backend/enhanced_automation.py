@@ -60,7 +60,7 @@ class SocialMediaAutomation:
         """
         self.config = config or {}
         self.manager = EnhancedSocialMediaManager(
-            storage_path=str(BASE_DIR / 'scheduled_posts.json'),
+            storage_path=str(BASE_DIR / 'scheduled_posts.json'),  # BASE_DIR is backend/ root
             **self.config.get('manager', {})
         )
         self._setup_platforms()

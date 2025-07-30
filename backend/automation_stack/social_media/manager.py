@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Any
 
-from .platforms import (
+from automation_stack.social_media.platforms import (
     Instagram,
     Facebook,
     Twitter,

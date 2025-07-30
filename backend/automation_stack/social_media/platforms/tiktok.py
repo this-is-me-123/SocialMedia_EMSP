@@ -8,7 +8,7 @@ import requests
 from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 
-from .base import SocialMediaPlatform
+from automation_stack.social_media.platforms.base import SocialMediaPlatform
 
 class Tiktok(SocialMediaPlatform):
     """

@@ -1,29 +1,31 @@
-"""Instagram platform integration for the social media automation system."""
+"""
+Facebook platform integration for the social media automation system.
+"""
 import os
 import time
 import logging
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 
-from .base import SocialMediaPlatform
+from automation_stack.social_media.platforms.base import SocialMediaPlatform
 
-class Instagram(SocialMediaPlatform):
+class Facebook(SocialMediaPlatform):
     """
-    Instagram platform implementation for posting content.
-    Uses the Instagram Graph API.
+    Facebook platform implementation for posting content.
+    Uses the Facebook Graph API.
     """
     
     def __init__(self, config: Dict[str, Any]):
         """
-        Initialize Instagram platform with configuration.
+        Initialize Facebook platform with configuration.
         
         Args:
             config: Platform configuration dictionary
         """
         super().__init__(config)
-        self.api_url = self.config.get('api_url', 'https://graph.instagram.com/v12.0')
-        self.access_token = self.config.get('api_key')
+        self.api_url = self.config.get('api_url', 'https://graph.facebook.com/v12.0')
+        self.access_token = self.config.get('access_token')
         self.page_id = self.config.get('page_id')
         self.rate_limit = self.config.get('rate_limit', 200)  # API calls per hour
         self.last_api_call = 0
@@ -34,7 +36,7 @@ class Instagram(SocialMediaPlatform):
         
     def authenticate(self) -> bool:
         """
-        Authenticate with the Instagram Graph API.
+        Authenticate with the Facebook Graph API.
         
         In mock mode, this will simulate successful authentication.
         
@@ -42,34 +44,42 @@ class Instagram(SocialMediaPlatform):
             bool: True if authentication was successful, False otherwise
         """
         if self.mock_mode:
-            self.logger.info("Running in mock mode - simulating successful authentication")
-            self.user_id = "mock_user_12345"
-            self.username = "mock_instagram_user"
+            self.logger.info("Running in mock mode - simulating successful Facebook authentication")
+            self.page_access_token = "mock_facebook_token_12345"
+            self.page_name = "Mock Facebook Page"
             self.authenticated = True
             return True
             
-        if not self.access_token:
-            self.logger.error("No access token provided for Instagram")
+        if not self.access_token or not self.page_id:
+            self.logger.error("Missing access token or page ID for Facebook")
             return False
             
         try:
-            # Simple token validation
+            # Verify page access token
             response = requests.get(
-                f"{self.api_url}/me",
-                params={'access_token': self.access_token, 'fields': 'id,username'}
+                f"{self.api_url}/me/accounts",
+                params={'access_token': self.access_token}
             )
             response.raise_for_status()
             
-            data = response.json()
-            self.user_id = data.get('id')
-            self.username = data.get('username')
+            # Check if we have access to the specified page
+            pages = response.json().get('data', [])
+            page = next((p for p in pages if p.get('id') == self.page_id), None)
+            
+            if not page:
+                self.logger.error(f"No access to page with ID: {self.page_id}")
+                return False
+                
+            # Store page access token
+            self.page_access_token = page.get('access_token')
+            self.page_name = page.get('name')
             self.authenticated = True
             
-            self.logger.info(f"Authenticated as Instagram user: {self.username}")
+            self.logger.info(f"Authenticated with Facebook page: {self.page_name}")
             return True
             
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"Instagram authentication failed: {str(e)}")
+            self.logger.error(f"Facebook authentication failed: {str(e)}")
             if hasattr(e, 'response') and e.response is not None:
                 self.logger.error(f"Response: {e.response.text}")
             return False
@@ -94,15 +104,15 @@ class Instagram(SocialMediaPlatform):
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Post content to Instagram.
+        Post content to Facebook.
         
         Args:
-            content_path: Path to the image or video file
+            content_path: Path to the image, video, or other media file
             caption: Post caption
             **kwargs: Additional parameters
-                - is_carousel: Whether to create a carousel post (multiple images)
-                - location_id: Instagram location ID
-                - user_tags: List of user tags
+                - link: URL to include with the post
+                - scheduled_publish_time: Unix timestamp for scheduling
+                - published: Whether to publish immediately (default: True)
                 
         Returns:
             Dictionary containing the post response
@@ -110,8 +120,8 @@ class Instagram(SocialMediaPlatform):
         if not self.authenticated and not self.authenticate():
             return {
                 'status': 'error',
-                'message': 'Not authenticated with Instagram',
-                'platform': 'instagram'
+                'message': 'Not authenticated with Facebook',
+                'platform': 'facebook'
             }
         
         # Validate content
@@ -119,7 +129,7 @@ class Instagram(SocialMediaPlatform):
             return {
                 'status': 'error',
                 'message': 'Invalid content',
-                'platform': 'instagram',
+                'platform': 'facebook',
                 'content_path': content_path
             }
         
@@ -129,41 +139,36 @@ class Instagram(SocialMediaPlatform):
             # Determine content type
             content_type = self._get_content_type(content_path)
             
-            if content_type == 'image':
-                return self._post_image(content_path, caption, **kwargs)
-            elif content_type == 'video':
-                return self._post_video(content_path, caption, **kwargs)
+            if content_type in ['image', 'video']:
+                return self._publish_media_post(content_path, caption, content_type, **kwargs)
             else:
-                return {
-                    'status': 'error',
-                    'message': f'Unsupported content type: {content_type}',
-                    'platform': 'instagram',
-                    'content_path': content_path
-                }
+                return self._publish_text_post(caption, **kwargs)
                 
         except Exception as e:
-            self.logger.error(f"Error posting to Instagram: {str(e)}", exc_info=True)
+            self.logger.error(f"Error posting to Facebook: {str(e)}", exc_info=True)
             return {
                 'status': 'error',
                 'message': str(e),
-                'platform': 'instagram'
+                'platform': 'facebook'
             }
     
-    def _post_image(
+    def _publish_media_post(
         self,
-        image_path: str,
+        media_path: str,
         caption: str,
+        media_type: str = 'image',
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Post an image to Instagram.
+        Publish a media post to Facebook.
         
         Args:
-            image_path: Path to the image file
+            media_path: Path to the media file
             caption: Post caption
+            media_type: Type of media ('image' or 'video')
             **kwargs: Additional parameters
-                - location_id: Instagram location ID
-                - user_tags: List of user tags
+                - published: Whether to publish immediately (default: True)
+                - scheduled_publish_time: Unix timestamp for scheduling
                 
         Returns:
             Dictionary containing the post response
@@ -171,8 +176,8 @@ class Instagram(SocialMediaPlatform):
         if not self.authenticated and not self.authenticate():
             return {
                 'status': 'error',
-                'message': 'Not authenticated with Instagram',
-                'platform': 'instagram'
+                'message': 'Not authenticated with Facebook',
+                'platform': 'facebook'
             }
             
         try:
@@ -182,146 +187,118 @@ class Instagram(SocialMediaPlatform):
                 from datetime import datetime
                 
                 # Create a mock post
-                post_id = f"mock_insta_{int(time.time())}"
+                post_id = f"mock_fb_{media_type}_{int(time.time())}"
                 post_data = {
                     'id': post_id,
-                    'image_path': os.path.basename(image_path),
+                    'media_path': os.path.basename(media_path),
                     'caption': caption,
+                    'media_type': media_type,
                     'timestamp': datetime.now().isoformat(),
-                    'url': f"https://www.instagram.com/p/{post_id}",
+                    'url': f"https://www.facebook.com/{post_id}",
                     **kwargs
                 }
                 
                 # Store the mock post
                 self.mock_posts.append(post_data)
                 
-                self.logger.info(f"[MOCK] Posted image to Instagram: {post_id}")
+                self.logger.info(f"[MOCK] Posted {media_type} to Facebook: {post_id}")
                 
                 return {
                     'status': 'success',
                     'id': post_id,
-                    'platform': 'instagram',
-                    'type': 'image',
-                    'url': f"https://www.instagram.com/p/{post_id}",
+                    'platform': 'facebook',
+                    'type': media_type,
+                    'url': f"https://www.facebook.com/{post_id}",
                     'mock': True
                 }
             
             # Real implementation for non-mock mode
             self._rate_limit()
             
-            # Note: Instagram Graph API requires a business account and additional permissions
-            # This is a simplified example that would need to be adapted based on your setup
-            
             # In a real implementation, you would:
-            # 1. Upload the image to get a container ID
-            # 2. Publish the container
+            # 1. Upload the media file to get an ID
+            # 2. Create a post with the media ID
             
             # For now, we'll simulate a successful post
-            post_id = f"insta_{int(time.time())}"
+            post_id = f"fb_{media_type}_{int(time.time())}"
             
-            self.logger.info(f"Posted image to Instagram: {post_id}")
+            self.logger.info(f"Posted {media_type} to Facebook: {post_id}")
             
             return {
                 'status': 'success',
                 'id': post_id,
-                'platform': 'instagram',
-                'type': 'image',
-                'url': f"https://www.instagram.com/p/{post_id}"
+                'platform': 'facebook',
+                'type': media_type,
+                'url': f"https://www.facebook.com/{post_id}"
             }
             
         except Exception as e:
-            self.logger.error(f"Error posting image to Instagram: {str(e)}", exc_info=True)
+            error_msg = f"Error posting {media_type} to Facebook: {str(e)}"
+            self.logger.error(error_msg, exc_info=True)
             return {
                 'status': 'error',
-                'message': str(e),
-                'platform': 'instagram'
+                'message': error_msg,
+                'platform': 'facebook'
             }
     
-    def _post_video(
+    def _publish_text_post(
         self,
-        video_path: str,
-        caption: str,
+        message: str,
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Post a video to Instagram.
+        Publish a text post to Facebook.
         
         Args:
-            video_path: Path to the video file
-            caption: Post caption
+            message: Post text
             **kwargs: Additional parameters
-                - thumbnail_path: Path to custom thumbnail
-                - location_id: Instagram location ID
+                - link: URL to include with the post
+                - published: Whether to publish immediately (default: True)
+                - scheduled_publish_time: Unix timestamp for scheduling
                 
         Returns:
             Dictionary containing the post response
         """
         try:
-            # Step 1: Upload the video to get a container ID
-            # This is a simplified example
+            self._rate_limit()
             
-            # In a real implementation, you would:
-            # 1. Upload the video file
-            # 2. Check the upload status
-            # 3. Publish the container
-            
+            # In a real implementation, you would make an API call to create the post
             # For now, we'll simulate a successful post
-            post_id = f"insta_video_{int(time.time())}"
+            post_id = f"fb_post_{int(time.time())}"
             
-            self.logger.info(f"Posted video to Instagram: {post_id}")
+            self.logger.info(f"Posted text to Facebook: {post_id}")
             
             return {
                 'status': 'success',
                 'id': post_id,
-                'platform': 'instagram',
-                'type': 'video',
-                'url': f"https://www.instagram.com/p/{post_id}"
+                'platform': 'facebook',
+                'type': 'text',
+                'url': f"https://www.facebook.com/{post_id}"
             }
             
         except Exception as e:
-            self.logger.error(f"Error posting video to Instagram: {str(e)}", exc_info=True)
+            self.logger.error(f"Error posting text to Facebook: {str(e)}", exc_info=True)
             raise
     
-    def post_image(
+    def _format_message(
         self,
-        image_path: str,
-        caption: str,
-        **kwargs
-    ) -> Dict[str, Any]:
-        """
-        Post an image to Instagram.
-        
-        This is a convenience method that delegates to the post() method.
-        
-        Args:
-            image_path: Path to the image file
-            caption: Post caption
-            **kwargs: Additional parameters
-                
-        Returns:
-            Dictionary containing the post response
-        """
-        return self.post(image_path, caption, **kwargs)
-    
-    def _format_caption(
-        self,
-        caption: str,
-        max_length: int = 2200,
+        message: str,
+        max_length: int = 63206,
         max_hashtags: int = 30
     ) -> str:
         """
-        Format the caption for Instagram.
+        Format the message for Facebook.
         
         Args:
-            caption: Original caption text
-            max_length: Maximum caption length (2200 characters)
+            message: Original message text
+            max_length: Maximum message length (63,206 characters)
             max_hashtags: Maximum number of hashtags to include
             
         Returns:
-            Formatted caption
+            Formatted message
         """
         # Format hashtags
-        formatted = super().format_hashtags(caption, max_hashtags)
+        formatted = super().format_hashtags(message, max_hashtags)
         
         # Truncate if needed
         if len(formatted) > max_length:

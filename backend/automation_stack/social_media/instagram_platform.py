@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from .base_platform import SocialMediaPlatform
+from automation_stack.social_media.base_platform import SocialMediaPlatform
 
 class InstagramPlatform(SocialMediaPlatform):
     """

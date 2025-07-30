@@ -1,8 +1,8 @@
 """
 Social media automation package for managing posts across multiple platforms.
 """
-from .manager import SocialMediaManager
-from .platforms import (
+from automation_stack.social_media.manager import SocialMediaManager
+from automation_stack.social_media.platforms import (
     SocialMediaPlatform,
     Instagram,
     Facebook,

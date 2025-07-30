@@ -24,10 +24,10 @@ if [[ ! "$ENV" =~ ^(staging|production)$ ]]; then
 fi
 
 # Check if running as root
-if [ "$(id -u)" -ne 0 ]; then
-  echo -e "${RED}Error: This script must be run as root${NC}"
-  exit 1
-fi
+#if [ "$(id -u)" -ne 0 ]; then
+# echo -e "${RED}Error: This script must be run as root${NC}"
+#  exit 1
+#fi
 
 # Load environment specific settings
 load_environment() {
@@ -39,7 +39,7 @@ load_environment() {
     PORT=8000
   else
     # Staging settings
-    GIT_BRANCH="develop"
+    GIT_BRANCH="main"
     PORT=8001
   fi
   
@@ -71,16 +71,17 @@ setup_venv() {
     echo "Creating virtual environment..."
     sudo -u $DEPLOY_USER python3 -m venv "$APP_DIR/venv"
   fi
-  
-  # Activate virtual environment
-  source "$APP_DIR/venv/bin/activate"
-  
-  # Upgrade pip and install requirements
-  echo "Installing dependencies..."
-  pip install --upgrade pip
-  pip install -r "$APP_DIR/requirements.txt"
-  
-  deactivate
+
+  # Always ensure pip is installed before using it
+  if [ ! -f "$APP_DIR/venv/bin/pip" ]; then
+    sudo -u $DEPLOY_USER $APP_DIR/venv/bin/python -m ensurepip --upgrade
+  fi
+
+  # Upgrade pip (this will also create pip if missing in some edge cases)
+  sudo -u $DEPLOY_USER $APP_DIR/venv/bin/python -m pip install --upgrade pip
+
+  # Now install requirements
+  sudo -u $DEPLOY_USER $APP_DIR/venv/bin/python -m pip install -r "$APP_DIR/requirements.txt"
 }
 
 # Configure systemd services

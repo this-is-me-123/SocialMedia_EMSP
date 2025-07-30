@@ -19,13 +19,13 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum, auto
 
 # Import platform implementations
-from .platforms import (
+from automation_stack.social_media.platforms import (
     Instagram,
     Facebook,
     Twitter,
     Tiktok
 )
-from ..config import PLATFORMS, SCHEDULE
+from automation_stack.config import PLATFORMS, SCHEDULE
 
 # Set up logging
 logger = logging.getLogger('social_media.enhanced_manager')
@@ -171,6 +171,7 @@ class EnhancedSocialMediaManager:
     
     def _save_posts(self) -> None:
         """Save scheduled posts to disk."""
+        # posts_file will resolve to backend/scheduled_posts.json or as set by storage_path
         posts_file = self._storage_path / 'scheduled_posts.json'
         posts_data = [post.to_dict() for post in self.scheduled_posts.values()]
         
@@ -182,6 +183,7 @@ class EnhancedSocialMediaManager:
     
     def _load_posts(self) -> None:
         """Load scheduled posts from disk."""
+        # posts_file will resolve to backend/scheduled_posts.json or as set by storage_path
         posts_file = self._storage_path / 'scheduled_posts.json'
         
         if not posts_file.exists():
