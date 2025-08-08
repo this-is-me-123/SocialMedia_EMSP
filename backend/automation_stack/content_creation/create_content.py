@@ -10,19 +10,198 @@ from pathlib import Path
 from typing import Optional, Tuple, List, Union
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
+import requests
+import openai
+import json
+from datetime import datetime
 
 # Import configuration
-from config import CONTENT
+from config.config import CONTENT
+import os
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+# Load API keys from environment
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4')
+SD_API_URL = os.getenv('SD_API_URL')
+SD_API_KEY = os.getenv('SD_API_KEY')
 
 class ContentCreator:
     """
     Handles the creation of visual content for social media posts.
     Supports image generation, text overlays, and video creation.
+    Also supports AI-powered caption and image generation (GPT/Stable Diffusion), and analytics event logging.
     """
-    
+
+    def generate_caption_with_gpt(self, prompt: str, max_tokens: int = 60) -> str:
+        """
+        Generate a caption using OpenAI GPT.
+        Args:
+            prompt: Prompt to send to GPT
+            max_tokens: Maximum tokens for the response
+        Returns:
+            Generated caption string
+        """
+        if not OPENAI_API_KEY:
+            logger.warning("OPENAI_API_KEY not set. Falling back to prompt as caption.")
+            return prompt
+        
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        try:
+            response = client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=max_tokens,
+                temperature=0.7
+            )
+            caption = response.choices[0].message.content.strip()
+            logger.info(f"Generated caption with GPT: {caption}")
+            # Send analytics event to backend
+            try:
+                requests.post(
+                    "http://localhost:8000/api/analytics/event",
+                    json={
+                        "event": "caption_generated",
+                        "provider": "openai_gpt",
+                        "prompt": prompt,
+                        "caption": caption,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, timeout=3
+                )
+            except Exception:
+                pass
+            return caption
+        except Exception as e:
+            logger.error(f"GPT caption generation failed: {e}")
+            # Send analytics event to backend
+            try:
+                requests.post(
+                    "http://localhost:8000/api/analytics/event",
+                    json={
+                        "event": "caption_generation_failed",
+                        "provider": "openai_gpt",
+                        "prompt": prompt,
+                        "error": str(e),
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, timeout=3
+                )
+            except Exception:
+                pass
+            return prompt
+
+    def generate_image_with_stable_diffusion(self, prompt: str, output_path: str) -> Optional[str]:
+        """
+        Generate an image using a Stable Diffusion API.
+        Args:
+            prompt: Text prompt for image generation
+            output_path: Where to save the generated image
+        Returns:
+            Path to the generated image, or None if failed
+        """
+        if not SD_API_URL or not SD_API_KEY:
+            logger.warning("Stable Diffusion API config missing. Skipping AI image generation.")
+            # Send analytics event to backend
+            try:
+                requests.post(
+                    "http://localhost:8000/api/analytics/event",
+                    json={
+                        "event": "image_generation_skipped",
+                        "provider": "stable_diffusion",
+                        "reason": "missing_api_config",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, timeout=3
+                )
+            except Exception:
+                pass
+            return None
+        headers = {"Authorization": f"Bearer {SD_API_KEY}", "Content-Type": "application/json"}
+        payload = {"prompt": prompt, "num_inference_steps": 30, "guidance_scale": 7.5}
+        try:
+            resp = requests.post(SD_API_URL, headers=headers, data=json.dumps(payload), timeout=60)
+            resp.raise_for_status()
+            result = resp.json()
+            if 'image' in result:
+                # Assume base64-encoded PNG
+                import base64
+                img_bytes = base64.b64decode(result['image'])
+                with open(output_path, 'wb') as f:
+                    f.write(img_bytes)
+                logger.info(f"Stable Diffusion image saved: {output_path}")
+                # Send analytics event to backend
+                try:
+                    requests.post(
+                        "http://localhost:8000/api/analytics/event",
+                        json={
+                            "event": "image_generated",
+                            "provider": "stable_diffusion",
+                            "prompt": prompt,
+                            "output_path": output_path,
+                            "timestamp": datetime.utcnow().isoformat()
+                        }, timeout=3
+                    )
+                except Exception:
+                    pass
+                return output_path
+            else:
+                logger.error(f"Stable Diffusion API did not return image: {result}")
+                # Send analytics event to backend
+                try:
+                    requests.post(
+                        "http://localhost:8000/api/analytics/event",
+                        json={
+                            "event": "image_generation_failed",
+                            "provider": "stable_diffusion",
+                            "prompt": prompt,
+                            "error": str(result),
+                            "timestamp": datetime.utcnow().isoformat()
+                        }, timeout=3
+                    )
+                except Exception:
+                    pass
+                return None
+        except Exception as e:
+            logger.error(f"Stable Diffusion image generation failed: {e}")
+            # Send analytics event to backend
+            try:
+                requests.post(
+                    "http://localhost:8000/api/analytics/event",
+                    json={
+                        "event": "image_generation_failed",
+                        "provider": "stable_diffusion",
+                        "prompt": prompt,
+                        "error": str(e),
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, timeout=3
+                )
+            except Exception:
+                pass
+            return None
+
+    def log_analytics_event(self, event_type: str, platform: str, post_id: str, metrics: dict, extra: dict = None):
+        """
+        Log analytics event (e.g., after posting or after engagement update).
+        Args:
+            event_type: e.g., 'post_published', 'post_engagement'
+            platform: Platform name
+            post_id: ID of the post
+            metrics: Dict of engagement metrics (likes, shares, etc.)
+            extra: Any extra data
+        """
+        event = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'event_type': event_type,
+            'platform': platform,
+            'post_id': post_id,
+            'metrics': metrics,
+            'extra': extra or {}
+        }
+        # For now, just log to file. Expand to DB or API as needed.
+        logger.info(f"ANALYTICS_EVENT: {json.dumps(event)}")
+
     def __init__(self, config: Optional[dict] = None):
         """
         Initialize the ContentCreator with configuration.
@@ -220,9 +399,23 @@ if __name__ == "__main__":
     
     creator = ContentCreator()
     
-    # Example: Create a single image
+    # Example: Generate a caption with GPT
+    prompt = "Write a catchy Instagram caption for a sunrise yoga session."
+    caption = creator.generate_caption_with_gpt(prompt)
+    print(f"Generated caption: {caption}")
+    
+    # Example: Generate an image with Stable Diffusion
+    sd_prompt = "A serene sunrise over a yoga class, vibrant colors, peaceful mood, photorealistic"
+    ai_image_path = os.path.join(creator.output_dir, "sd_yoga_sunrise.png")
+    sd_image = creator.generate_image_with_stable_diffusion(sd_prompt, ai_image_path)
+    if sd_image:
+        print(f"Stable Diffusion image saved: {sd_image}")
+    else:
+        print("Stable Diffusion image generation failed or not configured.")
+    
+    # Example: Create a single image (classic method)
     image_path = creator.create_image(
-        "This is a test caption for social media post #1",
+        caption,
         "test",
         1
     )
@@ -233,6 +426,15 @@ if __name__ == "__main__":
         audio_path=os.path.join(CONTENT['audio_dir'], 'background_music.mp3') if os.path.exists(os.path.join(CONTENT['audio_dir'], 'background_music.mp3')) else None,
         duration=5
     )
-    
     print(f"Created image: {image_path}")
     print(f"Created video: {video_path}")
+    
+    # Example: Log analytics event for engagement
+    creator.log_analytics_event(
+        event_type='post_engagement',
+        platform='instagram',
+        post_id='1234567890',
+        metrics={'likes': 120, 'shares': 15, 'comments': 7},
+        extra={'caption': caption}
+    )
+

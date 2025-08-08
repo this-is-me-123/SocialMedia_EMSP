@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 2rem 3rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: #f0f2f5;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .event-type {
+      font-weight: bold;
+      color: #1877F2;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Analytics Dashboard</h1>
+    <table id="analytics-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Event</th>
+          <th>Provider</th>
+          <th>User</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Analytics rows go here -->
+      </tbody>
+    </table>
+    <button onclick="refreshAnalytics()">Refresh</button>
+  </div>
+  <script>
+    async function fetchAnalytics() {
+      const response = await fetch('http://127.0.0.1:8000/api/analytics/summary');
+      return response.ok ? response.json() : [];
+    }
+    function renderAnalytics(data) {
+      const tbody = document.querySelector('#analytics-table tbody');
+      tbody.innerHTML = '';
+      data.forEach(ev => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${ev.timestamp || ''}</td>
+          <td class="event-type">${ev.event || ''}</td>
+          <td>${ev.provider || ''}</td>
+          <td>${ev.user ? (ev.user.name || ev.user.username || '') : ''}</td>
+          <td><pre>${JSON.stringify(ev, null, 2)}</pre></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    async function refreshAnalytics() {
+      const data = await fetchAnalytics();
+      renderAnalytics(data);
+    }
+    // Initial load
+    refreshAnalytics();
+  </script>
+</body>
+</html>

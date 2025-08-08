@@ -1,0 +1,100 @@
+version: '3.8'
+
+# Define services
+services:
+  # Backend Service
+  backend:
+    build: 
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ../backend/content:/app/content
+      - ../backend/logs:/app/logs
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - app-network
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+
+  # Database Service (PostgreSQL for backend)
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-socialmedia}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    ports:
+      - "5432:5432"
+
+  # MySQL Database Service (for WordPress)
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+      MYSQL_USER: ${WORDPRESS_DB_USER:-wpuser}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wppass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    ports:
+      - "3307:3306"
+
+  # WordPress Service
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wpuser}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wppass}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    networks:
+      - app-network
+
+# Comment out the frontend service if you don't need it
+#   frontend:
+#     build:
+#       context: ../frontend
+#       dockerfile: Dockerfile
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000}
+#     depends_on:
+#       - backend
+#     restart: unless-stopped
+#     networks:
+#       - app-network
+
+# Networks
+networks:
+  app-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  postgres_data:
+  mysql_data:
+  wordpress_data:

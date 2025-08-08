@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheduled Posts Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 2rem 3rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: #f0f2f5;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .status {
+      font-weight: bold;
+      color: #1877F2;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Scheduled Posts</h1>
+    <table id="scheduled-posts-table">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Content Path</th>
+          <th>Caption</th>
+          <th>Scheduled Time</th>
+          <th>Status</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Scheduled posts rows go here -->
+      </tbody>
+    </table>
+    <button onclick="refreshScheduledPosts()">Refresh</button>
+  </div>
+  <script>
+    async function fetchScheduledPosts() {
+      const response = await fetch('http://127.0.0.1:8000/api/scheduled_posts');
+      return response.ok ? await response.json() : [];
+    }
+    function renderScheduledPosts(data) {
+      const tbody = document.querySelector('#scheduled-posts-table tbody');
+      tbody.innerHTML = '';
+      data.forEach(post => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${post.platform || ''}</td>
+          <td>${post.content || (post.media_urls && post.media_urls[0]) || ''}</td>
+          <td>${post.caption || ''}</td>
+          <td>${post.scheduled_time || ''}</td>
+          <td class="status">${post.status || ''}</td>
+          <td>${post.created_at || ''}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    async function refreshScheduledPosts() {
+      const data = await fetchScheduledPosts();
+      renderScheduledPosts(data);
+    }
+    // Initial load
+    refreshScheduledPosts();
+  </script>
+</body>
+</html>

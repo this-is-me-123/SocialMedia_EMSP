@@ -1,0 +1,71 @@
+# version attribute removed for compatibility with Compose V2 '3.8'
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: socialmedia
+      POSTGRES_USER: socialmedia
+      POSTGRES_PASSWORD: changeme123  # Change this in production
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/automation_stack/Dockerfile
+    command: /bin/sh -c "chmod +x /app/wait-for-it.sh && /app/wait-for-it.sh db:5432 -- sh -c 'python -m automation_stack.auto_migrate && uvicorn automation_stack.main:app --host 0.0.0.0 --port 8000'"
+    environment:
+      POSTGRES_URL: postgresql://socialmedia:changeme123@db:5432/socialmedia
+      JWT_SECRET_KEY: your-super-secret-key
+      CORS_ALLOW_ORIGINS: http://localhost:5173  # Set to your frontend domain in prod
+      INSTAGRAM_CLIENT_ID: dummy-client-id
+      INSTAGRAM_CLIENT_SECRET: dummy-client-secret
+      INSTAGRAM_VERIFY_TOKEN: dummy-verify-token
+      INSTAGRAM_REDIRECT_URI: http://localhost:8000/auth/instagram/callback
+      TIKTOK_CLIENT_KEY: dummy-tiktok-key
+      TIKTOK_CLIENT_SECRET: dummy-tiktok-secret
+      TIKTOK_REDIRECT_URI: http://localhost:8000/auth/tiktok/callback
+      # Add other secrets as needed
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+
+  nginx:
+    image: nginx:1.25
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./wordpress/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot-www:/usr/share/nginx/html:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ./certbot-www:/usr/share/nginx/html
+    entrypoint: >
+      /bin/sh -c "sleep 10 && certbot certonly --webroot -w /usr/share/nginx/html --non-interactive --agree-tos --email chris@encompass-msp.com -d apps.encompass-msp.com && nginx -s reload"
+    # Certbot now uses apps.encompass-msp.com and chris@encompass-msp.com
+    # Replace your-email@example.com and yourdomain.com with your real values
+
+volumes:
+  db_data:

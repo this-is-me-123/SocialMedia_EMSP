@@ -89,27 +89,33 @@ class SocialMediaPlatform(ABC):
             
         return True
     
-    def _get_content_type(self, file_path: Union[str, Path]) -> str:
+    def _get_content_type(self, file_path: Union[str, Path, list]) -> str:
         """
-        Determine the content type based on file extension.
-        
+        Determine the content type: image, video, text, link, or carousel.
         Args:
-            file_path: Path to the file
-            
+            file_path: Path to the file, string content, URL, or list of files
         Returns:
-            Content type (image, video, or unknown)
+            Content type (image, video, text, link, carousel, or unknown)
         """
-        ext = Path(file_path).suffix.lower()
-        
         image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
         video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.webm'}
-        
+
+        # Carousel: list of image paths
+        if isinstance(file_path, list) and all(isinstance(p, (str, Path)) and str(p).lower().endswith(tuple(image_extensions)) for p in file_path):
+            return 'carousel'
+        # Link: URL string
+        if isinstance(file_path, str) and file_path.strip().lower().startswith(('http://', 'https://')):
+            return 'link'
+        # Text: plain string, not a file path or URL
+        if isinstance(file_path, str) and not any(file_path.lower().endswith(ext) for ext in image_extensions | video_extensions) and not file_path.strip().lower().startswith(('http://', 'https://')):
+            return 'text'
+        # Image/video: file path
+        ext = Path(file_path).suffix.lower() if isinstance(file_path, (str, Path)) else ''
         if ext in image_extensions:
             return 'image'
         elif ext in video_extensions:
             return 'video'
-        else:
-            return 'unknown'
+        return 'unknown'
     
     def format_hashtags(
         self,

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f6fa;
+      font-family: Arial, sans-serif;
+    }
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      background: #fff;
+      padding: 2rem 3rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+    .login-button {
+      text-align: center;
+    }
+    .login-logo {
+      display: block;
+      margin: 0 auto 0.5rem;
+      width: 32px;
+      height: 32px;
+    }
+    .login-button button {
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background-color: #1877F2;
+      color: #fff;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .login-button.facebook button { background: #1877F2; }
+    .login-button.instagram button { background: #E1306C; }
+    .login-button.tiktok button { background: #000; }
+    .login-button.threads button { background: #000; }
+    .login-button.facebook button:hover { background: #145db2; }
+    .login-button.instagram button:hover { background: #b92d5d; }
+    .login-button.tiktok button:hover,
+    .login-button.threads button:hover { background: #222; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-button facebook">
+      <img src="/assets/facebook.svg" alt="Facebook" class="login-logo">
+      <button onclick="loginWithFacebook()">Login with Facebook</button>
+    </div>
+    <div class="login-button instagram">
+      <img src="/assets/instagram.svg" alt="Instagram" class="login-logo">
+      <button onclick="loginWithInstagram()">Login with Instagram</button>
+    </div>
+    <div class="login-button tiktok">
+      <img src="/assets/tiktok.svg" alt="TikTok" class="login-logo">
+      <button onclick="loginWithTikTok()">Login with TikTok</button>
+    </div>
+    <div class="login-button threads">
+      <img src="/assets/threads.svg" alt="Threads" class="login-logo">
+      <button onclick="loginWithThreads()">Login with Threads</button>
+    </div>
+  </div>
+  <!-- Facebook SDK -->
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<script>
+  // Initialize Facebook SDK
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1455952358866489', // FB_APP_ID
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v19.0'
+    });
+  };
+
+  // Analytics event tracking
+  function trackEvent(event, data = {}) {
+    fetch('/api/analytics/event', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({event, ...data, timestamp: new Date().toISOString()})
+    });
+  }
+
+  // Facebook Login
+  function loginWithFacebook() {
+    FB.login(function(response) {
+      if (response.authResponse) {
+        FB.api('/me', {fields: 'name,email'}, function(userInfo) {
+          trackEvent('login_success', {provider: 'facebook', user: userInfo});
+          // Send access token and user info to backend for session/auth
+          fetch('https://gabriel-demonstrates-relief-cedar.trycloudflare.com/auth/facebook/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              accessToken: response.authResponse.accessToken,
+              user: userInfo
+            })
+          })
+          .then(res => res.ok ? window.location.href = '/' : alert('Login failed.'))
+          .catch(() => { alert('Login error.'); trackEvent('login_error', {provider: 'facebook'}); });
+        });
+      } else {
+        alert('Facebook login cancelled or failed.');
+        trackEvent('login_cancel', {provider: 'facebook'});
+      }
+    }, {scope: 'public_profile,email'});
+  }
+
+  // Instagram Login (OAuth Redirect)
+  function loginWithInstagram() {
+    trackEvent('login_attempt', {provider: 'instagram'});
+    const clientId = '1784204965802334'; // Your Instagram App ID (Business)
+    const redirectUri = encodeURIComponent('https://apps.encompass-msp.com/api/auth/instagram/callback');
+    const scope = 'instagram_basic,instagram_manage_insights';
+    const state = Math.random().toString(36).substring(2); // Optional for CSRF
+
+    const authUrl = `https://www.facebook.com/v18.0/dialog/oauth` +
+      `?client_id=${clientId}` +
+      `&redirect_uri=${redirectUri}` +
+      `&scope=${scope}` +
+      `&response_type=code` +
+      `&state=${state}`;
+
+    window.location.href = authUrl;
+  }
+
+  // TikTok Login (OAuth Redirect)
+  function loginWithTikTok() {
+    trackEvent('login_attempt', {provider: 'tiktok'});
+    const clientKey = 'sbawpbtmjmw9ys0zln';
+    const redirectUri = encodeURIComponent('https://apps.encompass-msp.com/auth/tiktok/callback');
+    const scope = 'user.info.basic';
+    const state = Math.random().toString(36).substring(2);
+    const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+    window.location.href = authUrl;
+  }
+
+  // Threads Login (no public API as of 2025)
+  function loginWithThreads() {
+    trackEvent('login_attempt', {provider: 'threads'});
+    alert('Threads login is not implemented yet.');
+  }
+</script>
+</body>
+</html>

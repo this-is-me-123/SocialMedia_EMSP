@@ -32,8 +32,15 @@ require_once ENCOMPASS_ANALYTICS_PLUGIN_DIR . 'admin/class-encompass-analytics-a
 
 // Initialize the plugin
 function run_encompass_analytics() {
+    // Initialize the core plugin class
     $plugin = new Encompass_MSP_Analytics();
     $plugin->run();
+
+    // Register REST API endpoints
+    if (file_exists(dirname(__FILE__) . '/includes/class-encompass-analytics-rest.php')) {
+        require_once dirname(__FILE__) . '/includes/class-encompass-analytics-rest.php';
+        new Encompass_MSP_Analytics_REST();
+    }
 }
 run_encompass_analytics();
 

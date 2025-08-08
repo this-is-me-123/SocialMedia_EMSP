@@ -113,10 +113,12 @@ $table_prefix = getenv_docker('WORDPRESS_TABLE_PREFIX', 'wp_');
  *
  * @link https://developer.wordpress.org/advanced-administration/debug/debug-wordpress/
  */
-define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
+
+define('WP_DEBUG', true);
 define('WP_DEBUG_LOG', true);
 define('WP_DEBUG_DISPLAY', true);
 
+trigger_error('Test error for debug.log', E_USER_WARNING);
 /* Add any custom values between this line and the "stop editing" line. */
 
 // Force PHP to display errors for debugging

@@ -8,21 +8,46 @@ class Encompass_MSP_Analytics_Public {
     private $tracking_enabled;
     private $track_admin_users;
     private $tracking_settings;
+    private $nonce;
 
-    public function __construct(string $plugin_name, string $version) {
+    public function __construct($plugin_name, $version) {
+        add_action('init', array($this, 'defer_init_actions'));
         $this->plugin_name = $plugin_name;
         $this->version = $version;
-        
-        // Get tracking settings
         $this->tracking_enabled = get_option('encompass_msp_tracking_enabled', 'yes') === 'yes';
         $this->track_admin_users = get_option('encompass_msp_track_admin_users', 'no') === 'yes';
+    }
+
+    public function defer_init_actions() {
+        // Place all wp_create_nonce and other pluggable function calls here
+        $this->nonce = wp_create_nonce('wp_rest');
         
-        // Check if tracking should be disabled for admin users
+        // Defer admin user tracking check until init
+        add_action('init', array($this, 'maybe_disable_tracking_for_admin'));
+        
+        // Defer tracking settings initialization to init
+        add_action('init', array($this, 'initialize_tracking_settings'));
+        
+        // Add actions and filters
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
+        add_action('wp_footer', array($this, 'add_tracking_code'));
+        
+        // Add API endpoint for client-side tracking
+        add_action('wp_ajax_encompass_track_event', array($this, 'track_event'));
+        add_action('wp_ajax_nopriv_encompass_track_event', array($this, 'track_event'));
+    }
+
+    /**
+     * Disable tracking for admin users if needed (run on init).
+     */
+    public function maybe_disable_tracking_for_admin() {
         if (current_user_can('manage_options') && !$this->track_admin_users) {
             $this->tracking_enabled = false;
         }
-        
-        // Initialize tracking settings
+    }
+
+    public function initialize_tracking_settings(): void {
         $this->tracking_settings = array(
             'trackOutboundLinks' => get_option('encompass_msp_track_outbound_links', 'yes') === 'yes',
             'trackDownloads' => get_option('encompass_msp_track_downloads', 'yes') === 'yes',
@@ -45,15 +70,6 @@ class Encompass_MSP_Analytics_Public {
             'isHome' => is_home(),
             'referrer' => isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : ''
         );
-        
-        // Add actions and filters
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
-        add_action('wp_footer', array($this, 'add_tracking_code'));
-        
-        // Add API endpoint for client-side tracking
-        add_action('wp_ajax_encompass_track_event', array($this, 'track_event'));
-        add_action('wp_ajax_nopriv_encompass_track_event', array($this, 'track_event'));
     }
 
     public function enqueue_styles(): void {

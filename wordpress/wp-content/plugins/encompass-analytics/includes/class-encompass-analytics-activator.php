@@ -40,7 +40,7 @@ class Encompass_MSP_Analytics_Activator {
         
         // Events table
         $table_name = $wpdb->prefix . 'encompass_events';
-        $sql = "
+        $sql[] = "
         CREATE TABLE IF NOT EXISTS `$table_name` (
             `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             `event_type` varchar(100) NOT NULL,

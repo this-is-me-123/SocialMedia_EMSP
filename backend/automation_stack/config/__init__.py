@@ -46,7 +46,7 @@ PLATFORMS = {
         'api_key': os.getenv('TWITTER_API_KEY'),
         'api_secret': os.getenv('TWITTER_API_SECRET'),
         'access_token': os.getenv('TWITTER_ACCESS_TOKEN'),
-        'access_secret': os.getenv('TWITTER_ACCESS_SECRET'),
+        'access_secret': lambda: os.getenv('TWITTER_ACCESS_TOKEN_SECRET'),
         'api_url': 'https://api.twitter.com/1.1',
         'rate_limit': 300
     },
@@ -113,3 +113,16 @@ for platform, config in PLATFORMS.items():
 # Create output directories
 os.makedirs(CONTENT['output_dir'], exist_ok=True)
 os.makedirs(CONTENT['audio_dir'], exist_ok=True)
+
+# Provide a get_config() function for compatibility with code expecting it
+
+def get_config():
+    """
+    Return all major config constants as a dictionary. Used for backward compatibility.
+    """
+    return {
+        "CONTENT": CONTENT,
+        "PLATFORMS": PLATFORMS,
+        "SCHEDULE": SCHEDULE,
+        "LOGGING": LOGGING,
+    }

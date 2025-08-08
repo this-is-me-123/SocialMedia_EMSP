@@ -26,12 +26,12 @@ PLATFORMS = {
         'rate_limit': int(os.getenv('INSTAGRAM_RATE_LIMIT', '200')),  # API calls per hour
     },
     'facebook': {
-        'enabled': os.getenv('FACEBOOK_ENABLED', 'false').lower() == 'true',
+        'enabled': True,
         'access_token': os.getenv('FACEBOOK_ACCESS_TOKEN', ''),
         'page_id': os.getenv('FACEBOOK_PAGE_ID', ''),
     },
     'twitter': {
-        'enabled': os.getenv('TWITTER_ENABLED', 'false').lower() == 'true',
+        'enabled': True,
         'api_key': os.getenv('TWITTER_API_KEY', ''),
         'api_secret': os.getenv('TWITTER_API_SECRET', ''),
         'access_token': os.getenv('TWITTER_ACCESS_TOKEN', ''),

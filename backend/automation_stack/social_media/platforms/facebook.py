@@ -24,7 +24,7 @@ class Facebook(SocialMediaPlatform):
             config: Platform configuration dictionary
         """
         super().__init__(config)
-        self.api_url = self.config.get('api_url', 'https://graph.facebook.com/v12.0')
+        self.api_url = self.config.get('api_url', 'https://graph.facebook.com/v18.0')
         self.access_token = self.config.get('access_token')
         self.page_id = self.config.get('page_id')
         self.rate_limit = self.config.get('rate_limit', 200)  # API calls per hour
@@ -51,33 +51,48 @@ class Facebook(SocialMediaPlatform):
             return True
             
         if not self.access_token or not self.page_id:
-            self.logger.error("Missing access token or page ID for Facebook")
+            self.logger.error("Facebook access token or page ID not configured")
             return False
             
         try:
-            # Verify page access token
-            response = requests.get(
-                f"{self.api_url}/me/accounts",
-                params={'access_token': self.access_token}
-            )
-            response.raise_for_status()
-            
-            # Check if we have access to the specified page
-            pages = response.json().get('data', [])
-            page = next((p for p in pages if p.get('id') == self.page_id), None)
-            
-            if not page:
-                self.logger.error(f"No access to page with ID: {self.page_id}")
+            # Validate access token format
+            if not self.access_token.strip() or not self.page_id.strip():
+                self.logger.error("Facebook access token or page ID is empty")
                 return False
                 
-            # Store page access token
-            self.page_access_token = page.get('access_token')
-            self.page_name = page.get('name')
-            self.authenticated = True
+            # Test API connection by getting page info
+            response = requests.get(
+                f"{self.api_url}/{self.page_id}",
+                params={'access_token': self.access_token, 'fields': 'name,id'},
+                timeout=30
+            )
             
-            self.logger.info(f"Authenticated with Facebook page: {self.page_name}")
-            return True
-            
+            if response.status_code == 200:
+                data = response.json()
+                self.page_access_token = self.access_token  # In production, get page-specific token
+                self.page_name = data.get('name', 'Unknown')
+                self.authenticated = True
+                self.logger.info(f"Successfully authenticated Facebook page: {self.page_name}")
+                return True
+            elif response.status_code == 401:
+                self.logger.error("Facebook authentication failed: Invalid access token")
+                return False
+            elif response.status_code == 403:
+                self.logger.error("Facebook authentication failed: Insufficient permissions")
+                return False
+            elif response.status_code == 404:
+                self.logger.error("Facebook authentication failed: Page not found or access denied")
+                return False
+            else:
+                self.logger.error(f"Facebook authentication failed: HTTP {response.status_code} - {response.text}")
+                return False
+                
+        except requests.exceptions.Timeout:
+            self.logger.error("Facebook authentication timeout - API request took too long")
+            return False
+        except requests.exceptions.ConnectionError:
+            self.logger.error("Facebook authentication failed: Unable to connect to API")
+            return False
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Facebook authentication failed: {str(e)}")
             if hasattr(e, 'response') and e.response is not None:
@@ -125,22 +140,39 @@ class Facebook(SocialMediaPlatform):
             }
         
         # Validate content
-        if not self.validate_content(content_path):
-            return {
-                'status': 'error',
-                'message': 'Invalid content',
-                'platform': 'facebook',
-                'content_path': content_path
-            }
+        content_type = self._get_content_type(content_path)
+        if content_type in ['image', 'video']:
+            if not self.validate_content(content_path):
+                return {
+                    'status': 'error',
+                    'message': 'Invalid content',
+                    'platform': 'facebook',
+                    'content_path': content_path
+                }
+        elif content_type == 'carousel':
+            # Validate all images in carousel
+            for img_path in content_path:
+                if not self.validate_content(img_path):
+                    return {
+                        'status': 'error',
+                        'message': f'Invalid carousel image: {img_path}',
+                        'platform': 'facebook',
+                        'content_path': img_path
+                    }
+        # For text/link/story posts, skip file validation
         
         try:
             self._rate_limit()
             
             # Determine content type
-            content_type = self._get_content_type(content_path)
-            
             if content_type in ['image', 'video']:
                 return self._publish_media_post(content_path, caption, content_type, **kwargs)
+            elif content_type == 'carousel':
+                return self._publish_carousel_post(content_path, caption, **kwargs)
+            elif content_type == 'link':
+                return self._publish_link_post(content_path, caption, **kwargs)
+            elif content_type == 'story':
+                return self._publish_story_post(content_path, caption, **kwargs)
             else:
                 return self._publish_text_post(caption, **kwargs)
                 
@@ -241,6 +273,166 @@ class Facebook(SocialMediaPlatform):
                 'platform': 'facebook'
             }
     
+    def _publish_link_post(
+        self,
+        link: str,
+        caption: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Publish a link post to Facebook via Graph API.
+        """
+        try:
+            self._rate_limit()
+            url = f"{self.api_url}/{self.page_id}/feed"
+            params = {
+                'access_token': self.access_token,
+                'link': link,
+                'message': caption
+            }
+            response = requests.post(url, data=params, timeout=30)
+            if response.status_code == 200:
+                data = response.json()
+                post_id = data.get('id')
+                self.logger.info(f"Posted link to Facebook: {post_id} ({link})")
+                return {
+                    'status': 'success',
+                    'id': post_id,
+                    'platform': 'facebook',
+                    'type': 'link',
+                    'url': f"https://www.facebook.com/{post_id}",
+                    'caption': caption
+                }
+            else:
+                self.logger.error(f"Facebook link post failed: {response.status_code} - {response.text}")
+                return {
+                    'status': 'error',
+                    'platform': 'facebook',
+                    'type': 'link',
+                    'message': response.text
+                }
+        except Exception as e:
+            self.logger.error(f"Error posting link to Facebook: {str(e)}", exc_info=True)
+            raise
+
+    def _publish_carousel_post(
+        self,
+        image_paths: list,
+        caption: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Publish a carousel (multi-image) post to Facebook using attached_media.
+        """
+        try:
+            self._rate_limit()
+            photo_ids = []
+            for img_path in image_paths:
+                upload_url = f"{self.api_url}/{self.page_id}/photos"
+                with open(img_path, 'rb') as img_file:
+                    files = {'source': img_file}
+                    params = {
+                        'access_token': self.access_token,
+                        'published': 'false'
+                    }
+                    resp = requests.post(upload_url, files=files, data=params, timeout=60)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        photo_ids.append({'media_fbid': data['id']})
+                    else:
+                        self.logger.error(f"Facebook image upload failed: {resp.status_code} - {resp.text}")
+                        return {
+                            'status': 'error',
+                            'platform': 'facebook',
+                            'type': 'carousel',
+                            'message': resp.text
+                        }
+            # Now create the carousel post
+            feed_url = f"{self.api_url}/{self.page_id}/feed"
+            params = {
+                'access_token': self.access_token,
+                'attached_media': str(photo_ids),
+                'message': caption
+            }
+            feed_resp = requests.post(feed_url, data=params, timeout=60)
+            if feed_resp.status_code == 200:
+                data = feed_resp.json()
+                post_id = data.get('id')
+                self.logger.info(f"Posted carousel to Facebook: {post_id} ({len(image_paths)} images)")
+                return {
+                    'status': 'success',
+                    'id': post_id,
+                    'platform': 'facebook',
+                    'type': 'carousel',
+                    'images': image_paths,
+                    'caption': caption,
+                    'url': f"https://www.facebook.com/{post_id}"
+                }
+            else:
+                self.logger.error(f"Facebook carousel post failed: {feed_resp.status_code} - {feed_resp.text}")
+                return {
+                    'status': 'error',
+                    'platform': 'facebook',
+                    'type': 'carousel',
+                    'message': feed_resp.text
+                }
+        except Exception as e:
+            self.logger.error(f"Error posting carousel to Facebook: {str(e)}", exc_info=True)
+            raise
+
+    def _publish_story_post(
+        self,
+        story_path: str,
+        caption: str = '',
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Publish a story/reel post to Facebook using the Graph API (if available).
+        """
+        try:
+            self._rate_limit()
+            # Facebook Stories API is not generally available; Reels API is limited
+            # We'll check for /reels or /stories endpoint
+            story_url = f"{self.api_url}/{self.page_id}/stories"
+            try:
+                with open(story_path, 'rb') as story_file:
+                    files = {'file': story_file}
+                    params = {
+                        'access_token': self.access_token,
+                        'caption': caption
+                    }
+                    resp = requests.post(story_url, files=files, data=params, timeout=60)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        post_id = data.get('id')
+                        self.logger.info(f"Posted story to Facebook: {post_id}")
+                        return {
+                            'status': 'success',
+                            'id': post_id,
+                            'platform': 'facebook',
+                            'type': 'story',
+                            'url': f"https://www.facebook.com/{post_id}",
+                            'caption': caption
+                        }
+                    else:
+                        self.logger.error(f"Facebook story post failed: {resp.status_code} - {resp.text}")
+                        return {
+                            'status': 'error',
+                            'platform': 'facebook',
+                            'type': 'story',
+                            'message': resp.text
+                        }
+            except FileNotFoundError:
+                return {
+                    'status': 'error',
+                    'platform': 'facebook',
+                    'type': 'story',
+                    'message': f'Story file not found: {story_path}'
+                }
+        except Exception as e:
+            self.logger.error(f"Error posting story to Facebook: {str(e)}", exc_info=True)
+            raise
+
     def _publish_text_post(
         self,
         message: str,

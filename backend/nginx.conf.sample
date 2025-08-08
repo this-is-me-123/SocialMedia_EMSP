@@ -1,0 +1,38 @@
+# Sample Nginx config for SSL and proxying to FastAPI/Uvicorn app
+# Place your SSL certificates in /etc/letsencrypt/live/yourdomain.com/
+
+server {
+    listen 80;
+    server_name apps.encompass-msp.com;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name apps.encompass-msp.com;
+
+    ssl_certificate /etc/letsencrypt/live/apps.encompass-msp.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/apps.encompass-msp.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # Proxy requests to FastAPI/Uvicorn
+    location / {
+        proxy_pass http://app:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180;
+    }
+
+    # Serve static files (optional, if you have a static directory)
+    # location /static/ {
+    #     alias /app/static/;
+    # }
+
+    # Increase client upload size if needed
+    client_max_body_size 50M;
+}

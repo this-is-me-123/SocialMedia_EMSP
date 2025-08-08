@@ -1,0 +1,16 @@
+# Exclude files and directories not needed in the Docker image
+nginx/
+TRAINING/
+scripts/
+wp-content/
+wp-admin/
+wp-includes/
+*.md
+*.log
+*.zip
+*.py
+*.sh
+*.json
+.DS_Store
+.vscode/
+.idea/

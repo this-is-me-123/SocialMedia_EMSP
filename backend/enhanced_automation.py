@@ -25,7 +25,7 @@ from automation_stack.social_media.platforms import (
 )
 
 # Import configuration
-from config import (
+from config.config import (
     PLATFORMS,
     LOG_LEVEL,
     TESTING,

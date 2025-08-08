@@ -24,10 +24,15 @@ class Twitter(SocialMediaPlatform):
             config: Platform configuration dictionary
         """
         super().__init__(config)
-        self.api_key = self.config.get('api_key')
-        self.api_secret = self.config.get('api_secret')
-        self.access_token = self.config.get('access_token')
-        self.access_secret = self.config.get('access_secret')
+        self.api_key = os.getenv('TWITTER_API_KEY')
+        self.api_secret = os.getenv('TWITTER_API_SECRET')
+        self.access_token = os.getenv('TWITTER_ACCESS_TOKEN')
+        self.access_secret = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+        print("Twitter config received in __init__:")
+        print("  api_key:", self.api_key)
+        print("  api_secret:", self.api_secret)
+        print("  access_token:", self.access_token)
+        print("  access_secret:", self.access_secret)
         self.rate_limit = self.config.get('rate_limit', 300)  # Tweets per 3-hour window
         self.last_api_call = 0
         self.client = None
@@ -125,7 +130,7 @@ class Twitter(SocialMediaPlatform):
         try:
             # In mock mode, simulate a successful tweet
             if self.mock_mode:
-                import os
+
                 from datetime import datetime
                 
                 # Format the tweet text

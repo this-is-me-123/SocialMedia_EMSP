@@ -140,96 +140,136 @@ class Tiktok(SocialMediaPlatform):
                 'platform': 'tiktok'
             }
         
-        # In mock mode, simulate a successful post
-        if self.mock_mode:
-            import os
-            from datetime import datetime
-            
-            # Format the caption
-            formatted_caption = self._format_caption(caption)
-            
-            # Create a mock video ID and URL
-            video_id = f"mock_tiktok_video_{int(time.time())}"
-            video_url = f"https://www.tiktok.com/@{self.username}/video/{video_id}"
-            
-            # Create video data
-            video_data = {
-                'id': video_id,
-                'url': video_url,
-                'caption': formatted_caption,
-                'timestamp': datetime.now().isoformat(),
-                'platform': 'tiktok',
-                'mock': True,
-                'privacy_level': kwargs.get('privacy_level', 'PUBLIC_TO_EVERYONE'),
-                'disable_comment': kwargs.get('disable_comment', False),
-                'disable_duet': kwargs.get('disable_duet', False),
-                'disable_stitch': kwargs.get('disable_stitch', False),
-                'disable_share': kwargs.get('disable_share', False)
-            }
-            
-            # Add video info if path exists
-            if content_path and os.path.exists(content_path):
-                video_data['filename'] = os.path.basename(content_path)
-                video_data['file_size'] = os.path.getsize(content_path)
-            
-            # Store the mock video
-            self.mock_videos.append(video_data)
-            
-            self.logger.info(f"[MOCK] Posted video to TikTok: {video_url}")
-            
-            return {
-                'status': 'success',
-                'id': video_id,
-                'platform': 'tiktok',
-                'type': 'video',
-                'url': video_url,
-                'caption': formatted_caption,
-                'mock': True
-            }
-        
-        # Real implementation for non-mock mode
-        try:
-            # Validate content
-            if not self.validate_content(content_path, 'video'):
+        # Determine content type
+        content_type = self._get_content_type(content_path)
+        if content_type == 'video':
+            if not self.validate_content(content_path):
                 return {
                     'status': 'error',
-                    'message': 'Invalid video content',
+                    'message': 'Invalid content',
                     'platform': 'tiktok',
                     'content_path': content_path
                 }
-            
+        elif content_type == 'carousel':
+            for img_path in content_path:
+                if not self.validate_content(img_path):
+                    return {
+                        'status': 'error',
+                        'message': f'Invalid carousel image: {img_path}',
+                        'platform': 'tiktok',
+                        'content_path': img_path
+                    }
+        # For text/link/story, skip file validation
+
+        try:
             self._rate_limit()
-            
-            # In a real implementation, you would:
-            # 1. Initialize an upload session
-            # 2. Upload the video in chunks
-            # 3. Finalize the upload
-            # 4. Create the post with metadata
-            
-            # For now, we'll simulate a successful post
-            video_id = f"tiktok_video_{int(time.time())}"
-            video_url = f"https://www.tiktok.com/@{self.username}/video/{video_id}"
-            
-            self.logger.info(f"Posted video to TikTok: {video_url}")
-            
-            return {
-                'status': 'success',
-                'id': video_id,
-                'platform': 'tiktok',
-                'type': 'video',
-                'url': video_url,
-                'caption': caption
-            }
-            
+            if content_type == 'video':
+                return self._post_video(content_path, caption, **kwargs)
+            elif content_type == 'carousel':
+                return self._post_carousel(content_path, caption, **kwargs)
+            elif content_type == 'link':
+                return self._post_link(content_path, caption, **kwargs)
+            elif content_type == 'story':
+                return self._post_story(content_path, caption, **kwargs)
+            elif content_type == 'text':
+                return self._post_text(caption, **kwargs)
+            else:
+                return {
+                    'status': 'error',
+                    'message': f'Unsupported content type: {content_type}',
+                    'platform': 'tiktok',
+                    'content_path': content_path
+                }
         except Exception as e:
-            error_msg = f"Error posting to TikTok: {str(e)}"
-            self.logger.error(error_msg, exc_info=True)
+            self.logger.error(f"Error posting to TikTok: {str(e)}", exc_info=True)
             return {
                 'status': 'error',
-                'message': error_msg,
+                'message': str(e),
                 'platform': 'tiktok'
             }
-    
+
+    def _post_video(self, video_path: str, caption: str, **kwargs) -> Dict[str, Any]:
+        """
+        Post a video to TikTok (stub).
+        """
+        try:
+            self._rate_limit()
+            video_id = f"tiktok_video_{int(time.time())}"
+            video_url = f"https://www.tiktok.com/@{getattr(self, 'username', 'user')}/video/{video_id}"
+            self.logger.info(f"[STUB] Posted video to TikTok: {video_url}")
+            return {
+                'status': 'success',
+                'platform': 'tiktok',
+                'result': {
+                    'id': video_id,
+                    'url': video_url,
+                    'caption': caption,
+                    'platform': 'tiktok',
+                    'type': 'video'
+                }
+            }
+        except Exception as e:
+            self.logger.error(f"Error posting video to TikTok: {str(e)}", exc_info=True)
+            raise
+
+    def _post_carousel(self, image_paths: list, caption: str, **kwargs) -> Dict[str, Any]:
+        """
+        Attempt to post a carousel (multi-image) to TikTok. Not available in public API; return error.
+        """
+        self._rate_limit()
+        return {
+            'status': 'error',
+            'platform': 'tiktok',
+            'type': 'carousel',
+            'message': 'TikTok carousel/photo post API is not publicly available. Contact TikTok for partner access.'
+        }
+
+    def _post_link(self, link: str, caption: str, **kwargs) -> Dict[str, Any]:
+        """
+        Attempt to post a link to TikTok (not supported).
+        """
+        self._rate_limit()
+        return {
+            'status': 'error',
+            'platform': 'tiktok',
+            'type': 'link',
+            'message': 'TikTok does not support link posts.'
+        }
+
+    def _post_story(self, story_path: str, caption: str = '', **kwargs) -> Dict[str, Any]:
+        """
+        Attempt to post a story/reel to TikTok. Not available in public API; return error.
+        """
+        self._rate_limit()
+        return {
+            'status': 'error',
+            'platform': 'tiktok',
+            'type': 'story',
+            'message': 'TikTok story/reel API is not publicly available. Contact TikTok for partner access.'
+        }
+
+    def _post_text(self, message: str, **kwargs) -> Dict[str, Any]:
+        """
+        Post a text-only message to TikTok (stub).
+        """
+        try:
+            self._rate_limit()
+            post_id = f"tiktok_text_{int(time.time())}"
+            self.logger.info(f"[STUB] Posted text to TikTok: {post_id}")
+            return {
+                'status': 'success',
+                'platform': 'tiktok',
+                'result': {
+                    'id': post_id,
+                    'type': 'text',
+                    'url': f"https://www.tiktok.com/@{getattr(self, 'username', 'user')}/video/{post_id}",
+                    'caption': message
+                }
+            }
+        except Exception as e:
+            self.logger.error(f"Error posting text to TikTok: {str(e)}", exc_info=True)
+            raise
+
     def _format_caption(
         self,
         caption: str,

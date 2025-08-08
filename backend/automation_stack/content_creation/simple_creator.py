@@ -1,8 +1,32 @@
 """
-Simple content creator that only handles image creation.
-This is a simplified version that avoids the moviepy dependency.
+SimpleContentCreator: Minimal content generator for social media images.
+
+Required config keys (pass as dict to constructor):
+- output_dir: Directory to save generated content
+- image_size: (width, height) for output image
+- font_path: Path to font file or font name
+- text_color: (R, G, B) tuple for text color
+- background_color: (R, G, B) tuple for background
+- text_padding: Padding around text (pixels)
+- font_size: Base font size
+- line_spacing: Line spacing multiplier
+
+Example usage:
+    config = {
+        'output_dir': 'generated_content',
+        'image_size': (1080, 1080),
+        'font_path': 'Arial.ttf',
+        'text_color': (0, 0, 0),
+        'background_color': (255, 255, 255),
+        'text_padding': 40,
+        'font_size': 40,
+        'line_spacing': 1.2
+    }
+    creator = SimpleContentCreator(config)
+    img_path = creator.create_image('Hello world!', category='test', index=0)
 """
 import os
+import logging
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from typing import Dict, Any, Optional
@@ -39,7 +63,7 @@ class SimpleContentCreator:
         except IOError:
             # Fall back to default font if specified font is not found
             self.font = ImageFont.load_default()
-            print("Warning: Could not load specified font. Using default font.")
+            logging.warning("Could not load specified font. Using default font.")
     
     def create_image(
         self,

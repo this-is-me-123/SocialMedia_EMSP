@@ -198,8 +198,7 @@ deploy() {
   chown -R $DEPLOY_USER:$DEPLOY_USER "$APP_DIR"
   find "$APP_DIR" -type d -exec chmod 750 {} \;
   find "$APP_DIR" -type f -exec chmod 640 {} \;
-  chmod 750 "$APP_DIR/scripts/"*.py
-  chmod 750 "$APP_DIR/automation_stack/"*.py
+  chmod +x /opt/socialmedia/backend/scripts/*.py
   
   setup_venv
   setup_services

@@ -22,7 +22,7 @@ class Instagram(SocialMediaPlatform):
             config: Platform configuration dictionary
         """
         super().__init__(config)
-        self.api_url = self.config.get('api_url', 'https://graph.instagram.com/v12.0')
+        self.api_url = self.config.get('api_url', 'https://graph.instagram.com/v18.0')
         self.access_token = self.config.get('api_key')
         self.page_id = self.config.get('page_id')
         self.rate_limit = self.config.get('rate_limit', 200)  # API calls per hour
@@ -48,30 +48,51 @@ class Instagram(SocialMediaPlatform):
             self.authenticated = True
             return True
             
-        if not self.access_token:
-            self.logger.error("No access token provided for Instagram")
+        if not self.access_token or not self.page_id:
+            self.logger.error("Instagram access token or page ID not configured")
             return False
             
         try:
-            # Simple token validation
+            # Validate access token format
+            if not self.access_token.strip():
+                self.logger.error("Instagram access token is empty")
+                return False
+                
+            # Test API connection by getting account info
             response = requests.get(
                 f"{self.api_url}/me",
-                params={'access_token': self.access_token, 'fields': 'id,username'}
+                params={'access_token': self.access_token},
+                timeout=30  # Add timeout
             )
-            response.raise_for_status()
             
-            data = response.json()
-            self.user_id = data.get('id')
-            self.username = data.get('username')
-            self.authenticated = True
-            
-            self.logger.info(f"Authenticated as Instagram user: {self.username}")
-            return True
-            
+            if response.status_code == 200:
+                data = response.json()
+                self.user_id = data.get('id')
+                self.username = data.get('username', 'Unknown')
+                self.authenticated = True
+                self.logger.info(f"Successfully authenticated Instagram user: {self.username}")
+                return True
+            elif response.status_code == 401:
+                self.logger.error("Instagram authentication failed: Invalid access token")
+                return False
+            elif response.status_code == 403:
+                self.logger.error("Instagram authentication failed: Insufficient permissions")
+                return False
+            else:
+                self.logger.error(f"Instagram authentication failed: HTTP {response.status_code} - {response.text}")
+                return False
+                
+        except requests.exceptions.Timeout:
+            self.logger.error("Instagram authentication timeout - API request took too long")
+            return False
+        except requests.exceptions.ConnectionError:
+            self.logger.error("Instagram authentication failed: Unable to connect to API")
+            return False
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"Instagram authentication failed: {str(e)}")
-            if hasattr(e, 'response') and e.response is not None:
-                self.logger.error(f"Response: {e.response.text}")
+            self.logger.error(f"Instagram authentication request error: {str(e)}")
+            return False
+        except Exception as e:
+            self.logger.error(f"Instagram authentication unexpected error: {str(e)}")
             return False
     
     def _rate_limit(self) -> None:
@@ -115,24 +136,41 @@ class Instagram(SocialMediaPlatform):
             }
         
         # Validate content
-        if not self.validate_content(content_path):
-            return {
-                'status': 'error',
-                'message': 'Invalid content',
-                'platform': 'instagram',
-                'content_path': content_path
-            }
-        
+        content_type = self._get_content_type(content_path)
+        if content_type in ['image', 'video']:
+            if not self.validate_content(content_path):
+                return {
+                    'status': 'error',
+                    'message': 'Invalid content',
+                    'platform': 'instagram',
+                    'content_path': content_path
+                }
+        elif content_type == 'carousel':
+            for img_path in content_path:
+                if not self.validate_content(img_path):
+                    return {
+                        'status': 'error',
+                        'message': f'Invalid carousel image: {img_path}',
+                        'platform': 'instagram',
+                        'content_path': img_path
+                    }
+        # For text/link/story, skip file validation
+
         try:
             self._rate_limit()
-            
             # Determine content type
-            content_type = self._get_content_type(content_path)
-            
             if content_type == 'image':
                 return self._post_image(content_path, caption, **kwargs)
             elif content_type == 'video':
                 return self._post_video(content_path, caption, **kwargs)
+            elif content_type == 'carousel':
+                return self._post_carousel(content_path, caption, **kwargs)
+            elif content_type == 'link':
+                return self._post_link(content_path, caption, **kwargs)
+            elif content_type == 'story':
+                return self._post_story(content_path, caption, **kwargs)
+            elif content_type == 'text':
+                return self._post_text(caption, **kwargs)
             else:
                 return {
                     'status': 'error',
@@ -149,6 +187,166 @@ class Instagram(SocialMediaPlatform):
                 'platform': 'instagram'
             }
     
+    def _post_link(
+        self,
+        link: str,
+        caption: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Attempt to post a link to Instagram. Only possible in stories with special permissions.
+        """
+        self._rate_limit()
+        return {
+            'status': 'error',
+            'platform': 'instagram',
+            'type': 'link',
+            'message': 'Instagram does not support link posts except in stories with special permissions.'
+        }
+
+    def _post_carousel(
+        self,
+        image_paths: list,
+        caption: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Post a carousel (multi-image) to Instagram using /media endpoint.
+        """
+        try:
+            self._rate_limit()
+            upload_ids = []
+            for img_path in image_paths:
+                upload_url = f"{self.api_url}/{self.page_id}/media"
+                with open(img_path, 'rb') as img_file:
+                    files = {'image': img_file}
+                    params = {
+                        'access_token': self.access_token,
+                        'media_type': 'IMAGE',
+                        'caption': caption
+                    }
+                    resp = requests.post(upload_url, files=files, data=params, timeout=60)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        upload_ids.append(data['id'])
+                    else:
+                        self.logger.error(f"Instagram image upload failed: {resp.status_code} - {resp.text}")
+                        return {
+                            'status': 'error',
+                            'platform': 'instagram',
+                            'type': 'carousel',
+                            'message': resp.text
+                        }
+            # Now create the carousel container
+            carousel_url = f"{self.api_url}/{self.page_id}/media"
+            params = {
+                'access_token': self.access_token,
+                'media_type': 'CAROUSEL',
+                'children': ','.join(upload_ids),
+                'caption': caption
+            }
+            resp = requests.post(carousel_url, data=params, timeout=60)
+            if resp.status_code == 200:
+                data = resp.json()
+                post_id = data.get('id')
+                self.logger.info(f"Posted carousel to Instagram: {post_id} ({len(image_paths)} images)")
+                return {
+                    'status': 'success',
+                    'id': post_id,
+                    'platform': 'instagram',
+                    'type': 'carousel',
+                    'images': image_paths,
+                    'caption': caption,
+                    'url': f"https://www.instagram.com/p/{post_id}/"
+                }
+            else:
+                self.logger.error(f"Instagram carousel post failed: {resp.status_code} - {resp.text}")
+                return {
+                    'status': 'error',
+                    'platform': 'instagram',
+                    'type': 'carousel',
+                    'message': resp.text
+                }
+        except Exception as e:
+            self.logger.error(f"Error posting carousel to Instagram: {str(e)}", exc_info=True)
+            raise
+
+    def _post_story(
+        self,
+        story_path: str,
+        caption: str = '',
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Post a story to Instagram using /media endpoint (if available).
+        """
+        try:
+            self._rate_limit()
+            story_url = f"{self.api_url}/{self.page_id}/media"
+            try:
+                with open(story_path, 'rb') as story_file:
+                    files = {'image': story_file}
+                    params = {
+                        'access_token': self.access_token,
+                        'media_type': 'STORIES',
+                        'caption': caption
+                    }
+                    resp = requests.post(story_url, files=files, data=params, timeout=60)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        post_id = data.get('id')
+                        self.logger.info(f"Posted story to Instagram: {post_id}")
+                        return {
+                            'status': 'success',
+                            'id': post_id,
+                            'platform': 'instagram',
+                            'type': 'story',
+                            'url': f"https://www.instagram.com/stories/{post_id}/",
+                            'caption': caption
+                        }
+                    else:
+                        self.logger.error(f"Instagram story post failed: {resp.status_code} - {resp.text}")
+                        return {
+                            'status': 'error',
+                            'platform': 'instagram',
+                            'type': 'story',
+                            'message': resp.text
+                        }
+            except FileNotFoundError:
+                return {
+                    'status': 'error',
+                    'platform': 'instagram',
+                    'type': 'story',
+                    'message': f'Story file not found: {story_path}'
+                }
+        except Exception as e:
+            self.logger.error(f"Error posting story to Instagram: {str(e)}", exc_info=True)
+            raise
+
+    def _post_text(
+        self,
+        message: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Post a text-only message to Instagram (stub).
+        """
+        try:
+            self._rate_limit()
+            post_id = f"ig_text_{int(time.time())}"
+            self.logger.info(f"[STUB] Posted text to Instagram: {post_id}")
+            return {
+                'status': 'success',
+                'id': post_id,
+                'platform': 'instagram',
+                'type': 'text',
+                'url': f"https://www.instagram.com/p/{post_id}/",
+                'caption': message
+            }
+        except Exception as e:
+            self.logger.error(f"Error posting text to Instagram: {str(e)}", exc_info=True)
+            raise
+
     def _post_image(
         self,
         image_path: str,

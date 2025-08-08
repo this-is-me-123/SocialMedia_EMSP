@@ -29,22 +29,24 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
     @staticmethod
     def get_db_config() -> Dict[str, str]:
         """Get database configuration from environment variables."""
+        import os
         return {
-            'dbname': 'socialmedia',
-            'user': 'socialmedia',
-            'password': '',
-            'host': 'localhost',
-            'port': '5432'
+            'dbname': os.getenv('POSTGRES_DB', 'socialmedia'),
+            'user': os.getenv('POSTGRES_USER', 'socialmedia'),
+            'password': os.getenv('POSTGRES_PASSWORD', ''),
+            'host': os.getenv('POSTGRES_HOST', 'localhost'),
+            'port': os.getenv('POSTGRES_PORT', '5432')
         }
     
     @staticmethod
     def get_redis_config() -> Dict[str, Any]:
         """Get Redis configuration from environment variables."""
+        import os
         return {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': None
+            'host': os.getenv('REDIS_HOST', 'localhost'),
+            'port': int(os.getenv('REDIS_PORT', '6379')),
+            'db': int(os.getenv('REDIS_DB', '0')),
+            'password': os.getenv('REDIS_PASSWORD', None)
         }
     
     def check_database(self) -> Dict[str, Any]:
@@ -206,12 +208,61 @@ def start_health_check_server(host: str = '0.0.0.0', port: int = 8000) -> Health
 
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
+from fastapi import Request, HTTPException, status as fastapi_status, Depends
+import os
+
+# --- Health endpoint security config ---
+HEALTH_IP_WHITELIST = os.getenv("HEALTH_IP_WHITELIST", "127.0.0.1,::1,localhost").split(",")
+HEALTH_TOKEN = os.getenv("HEALTH_TOKEN", None)
+HEALTH_REQUIRE_AUTH = os.getenv("HEALTH_REQUIRE_AUTH", "false").lower() == "true"
+
+def check_ip_allowed(request: Request):
+    client_ip = request.client.host
+    if HEALTH_IP_WHITELIST and client_ip not in HEALTH_IP_WHITELIST:
+        logger.warning(f"/health access denied from {client_ip}")
+        raise HTTPException(status_code=fastapi_status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    logger.info(f"/health access from {client_ip}")
+
+def check_token(request: Request):
+    if HEALTH_TOKEN:
+        token = request.headers.get("X-Health-Token")
+        if token != HEALTH_TOKEN:
+            logger.warning(f"/health invalid token from {request.client.host}")
+            raise HTTPException(status_code=fastapi_status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
 @app.get("/health")
-def health_check():
-    return {"status": "ok"}
+def health_check(request: Request):
+    """
+    Health check endpoint. Reports DB and Redis status.
+    Security:
+      - IP whitelisting via HEALTH_IP_WHITELIST (comma-separated)
+      - Optional token auth via HEALTH_TOKEN (header: X-Health-Token)
+      - Set HEALTH_REQUIRE_AUTH=true to require both in prod
+    """
+    # Enforce security
+    if HEALTH_REQUIRE_AUTH:
+        check_ip_allowed(request)
+        check_token(request)
+    else:
+        # Always allow localhost/dev by default
+        if request.client.host not in HEALTH_IP_WHITELIST:
+            logger.warning(f"/health public access from {request.client.host}")
+    handler = HealthCheckHandler
+    db_status = handler.check_database(handler)
+    redis_status = handler.check_redis(handler)
+    status_obj = {
+        "database": db_status,
+        "redis": redis_status,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    http_status = 200 if db_status['status'] == 'ok' and redis_status['status'] == 'ok' else 503
+    logger.info(f"/health status: {status_obj}, HTTP {http_status}")
+    return JSONResponse(content=status_obj, status_code=http_status)
+# TODO: For advanced security, support OAuth/JWT for health endpoint if required.
 
 if __name__ == "__main__":
     import argparse
